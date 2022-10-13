@@ -369,6 +369,8 @@ void nlohmann_test()
    std::cout << "daw_json_link runtime: " << runtime << '\n';
 }
 
+#include "jsoncons/json.hpp"
+
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
