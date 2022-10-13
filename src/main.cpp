@@ -34,6 +34,15 @@ static constexpr std::string_view message = R"(
 }
 )";
 
+/*static constexpr std::string_view message = R"(
+{
+   "string": "Hello world",
+   "number": 3.14,
+   "boolean": true,
+   "another_bool": false
+}
+)";*/
+
 #include <chrono>
 #include <iostream>
 #include <unordered_map>
@@ -138,9 +147,11 @@ struct glz::meta<obj_t> {
 };
 
 #ifdef NDEBUG
+//static constexpr size_t iterations = 1'000'000;
 static constexpr size_t iterations = 1'000'000;
 #else
 static constexpr size_t iterations = 100'000;
+//static constexpr size_t iterations = 100'000;
 #endif
 
 void glaze_test()
@@ -150,6 +161,9 @@ void glaze_test()
    obj_t obj;
    
    auto t0 = std::chrono::steady_clock::now();
+   
+   glz::read_json(obj, buffer);
+   glz::write_json(obj, buffer);
    
    try {
       for (size_t i = 0; i < iterations; ++i) {
@@ -217,7 +231,18 @@ struct daw::json::json_data_contract<another_object_t> {
 
 template<>
 struct daw::json::json_data_contract<obj_t> {
-  using type = json_member_list<json_class<"fixed_object", fixed_object_t>,
+   /*using type = json_member_list<
+    json_string<"string", std::string>,
+    json_number<"number", double>,
+    json_bool<"boolean", bool>,
+    json_bool<"another_bool", bool>>;
+   
+   static constexpr auto to_json_data( obj_t const & value ) {
+         return std::forward_as_tuple( value.string, value.number, value.boolean, value.another_bool );
+       }*/
+   
+  using type = json_member_list<
+   json_class<"fixed_object", fixed_object_t>,
    json_class<"fixed_name_object", fixed_name_object_t>,
    json_class<"another_object", another_object_t>,
    json_array<"string_array", std::string>,
