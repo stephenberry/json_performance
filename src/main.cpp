@@ -8,13 +8,6 @@ static constexpr std::string_view message = R"(
       "float_array": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
       "double_array": [3288398.238, 233e22, 289e-1, 0.928759872, 0.22222848, 0.1, 0.2, 0.3, 0.4]
    },
-   "dynamic_object": {
-      "name0": "James",
-      "name1": "Abraham",
-      "name2": "Susan",
-      "name3": "Frank",
-      "name4": "Alicia"
-   },
    "fixed_name_object": {
       "name0": "James",
       "name1": "Abraham",
@@ -33,10 +26,11 @@ static constexpr std::string_view message = R"(
          "id": "298728949872"
       }
    },
-   "fixed_string_array": ["Cat", "Dog", "Elephant", "Tiger"],
+   "string_array": ["Cat", "Dog", "Elephant", "Tiger"],
    "string": "Hello world",
    "number": 3.14,
-   "boolean": true
+   "boolean": true,
+   "another_bool": false
 }
 )";
 
@@ -51,6 +45,41 @@ struct fixed_object_t
    std::vector<double> double_array;
 };
 
+struct fixed_name_object_t
+{
+   std::string name0{};
+   std::string name1{};
+   std::string name2{};
+   std::string name3{};
+   std::string name4{};
+};
+
+struct nested_object_t
+{
+   std::vector<std::array<double, 3>> v3s{};
+   std::string id{};
+};
+
+struct another_object_t
+{
+   std::string string{};
+   std::string another_string{};
+   bool boolean{};
+   nested_object_t nested_object{};
+};
+
+struct obj_t
+{
+   fixed_object_t fixed_object{};
+   fixed_name_object_t fixed_name_object{};
+   another_object_t another_object{};
+   std::vector<std::string> string_array{};
+   std::string string{};
+   double number{};
+   bool boolean{};
+   bool another_bool{};
+};
+
 template <>
 struct glz::meta<fixed_object_t> {
    using T = fixed_object_t;
@@ -59,15 +88,6 @@ struct glz::meta<fixed_object_t> {
       "float_array", &T::float_array,
       "double_array", &T::double_array
    );
-};
-
-struct fixed_name_object_t
-{
-   std::string name0{};
-   std::string name1{};
-   std::string name2{};
-   std::string name3{};
-   std::string name4{};
 };
 
 template <>
@@ -82,12 +102,6 @@ struct glz::meta<fixed_name_object_t> {
    );
 };
 
-struct nested_object_t
-{
-   std::vector<std::array<double, 3>> v3s{};
-   std::string id{};
-};
-
 template <>
 struct glz::meta<nested_object_t> {
    using T = nested_object_t;
@@ -95,14 +109,6 @@ struct glz::meta<nested_object_t> {
       "v3s", &T::v3s,
       "id", &T::id
    );
-};
-
-struct another_object_t
-{
-   std::string string{};
-   std::string another_string{};
-   bool boolean{};
-   nested_object_t nested_object{};
 };
 
 template <>
@@ -116,34 +122,26 @@ struct glz::meta<another_object_t> {
    );
 };
 
-struct obj_t
-{
-   fixed_object_t fixed_object{};
-   std::unordered_map<std::string, std::string> dynamic_object;
-   fixed_name_object_t fixed_name_object{};
-   another_object_t another_object{};
-   std::array<std::string, 4> fixed_string_array{};
-   std::string string{};
-   double number{};
-   bool boolean{};
-};
-
 template <>
 struct glz::meta<obj_t> {
    using T = obj_t;
    static constexpr auto value = object(
       "fixed_object", &T::fixed_object,
-      "dynamic_object", &T::dynamic_object,
       "fixed_name_object", &T::fixed_name_object,
       "another_object", &T::another_object,
-      "fixed_string_array", &T::fixed_string_array,
+      "string_array", &T::string_array,
       "string", &T::string,
       "number", &T::number,
-      "boolean", &T::boolean
+      "boolean", &T::boolean,
+      "another_bool", &T::another_bool
    );
 };
 
-static constexpr size_t iterations = 1000;
+#ifdef NDEBUG
+static constexpr size_t iterations = 1'000'000;
+#else
+static constexpr size_t iterations = 100'000;
+#endif
 
 void glaze_test()
 {
@@ -169,9 +167,188 @@ void glaze_test()
    std::cout << "glaze runtime: " << runtime << '\n';
 }
 
+#include <daw/json/daw_json_link.h>
+
+template<>
+struct daw::json::json_data_contract<fixed_object_t> {
+  using type = json_member_list<json_array<"int_array", int>,
+   json_array<"float_array", float>,
+   json_array<"double_array", double>>;
+   
+   static constexpr auto to_json_data( fixed_object_t const & value ) {
+         return std::forward_as_tuple( value.int_array, value.float_array, value.double_array);
+       }
+};
+
+template<>
+struct daw::json::json_data_contract<fixed_name_object_t> {
+  using type = json_member_list<json_string<"name0", std::string>,
+   json_string<"name1", std::string>,
+   json_string<"name2", std::string>,
+   json_string<"name3", std::string>,
+   json_string<"name4", std::string>>;
+   
+   static constexpr auto to_json_data( fixed_name_object_t const & value ) {
+         return std::forward_as_tuple( value.name0, value.name1, value.name2, value.name3, value.name4 );
+       }
+};
+
+template<>
+struct daw::json::json_data_contract<nested_object_t> {
+  using type = json_member_list<json_array<"v3s", std::array<double, 3>>,
+   json_string<"id", std::string>>;
+   
+   static constexpr auto to_json_data( nested_object_t const & value ) {
+         return std::forward_as_tuple( value.v3s, value.id );
+       }
+};
+
+template<>
+struct daw::json::json_data_contract<another_object_t> {
+  using type = json_member_list<json_string<"string", std::string>,
+   json_string<"another_string", std::string>,
+   json_bool<"boolean", bool>,
+   json_class<"nested_object", nested_object_t>>;
+   
+   static constexpr auto to_json_data( another_object_t const & value ) {
+         return std::forward_as_tuple( value.string, value.another_string, value.boolean, value.nested_object );
+       }
+};
+
+template<>
+struct daw::json::json_data_contract<obj_t> {
+  using type = json_member_list<json_class<"fixed_object", fixed_object_t>,
+   json_class<"fixed_name_object", fixed_name_object_t>,
+   json_class<"another_object", another_object_t>,
+   json_array<"string_array", std::string>,
+   json_string<"string", std::string>,
+   json_number<"number", double>,
+   json_bool<"boolean", bool>,
+   json_bool<"another_bool", bool>>;
+   
+   static constexpr auto to_json_data( obj_t const & value ) {
+         return std::forward_as_tuple( value.fixed_object, value.fixed_name_object, value.another_object, value.string_array, value.string, value.number, value.boolean, value.another_bool );
+       }
+};
+
+void daw_json_link_test()
+{
+   std::string buffer{ message };
+   
+   obj_t obj;
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         obj = daw::json::from_json<obj_t>(buffer);
+         buffer = daw::json::to_json(obj);
+      }
+   } catch (const std::exception& e) {
+      std::cout << "daw_json_link error: " << e.what() << '\n';
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   std::cout << "daw_json_link runtime: " << runtime << '\n';
+}
+
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
+
+void to_json(json& j, const fixed_object_t& v) {
+    j = json{{"int_array", v.int_array}, {"float_array", v.float_array}, {"double_array", v.double_array}};
+}
+
+void from_json(const json& j, fixed_object_t& v) {
+    j.at("int_array").get_to(v.int_array);
+    j.at("float_array").get_to(v.float_array);
+    j.at("double_array").get_to(v.double_array);
+}
+
+void to_json(json& j, const fixed_name_object_t& v) {
+   j = json{{"name0", v.name0}, {"name1", v.name1}, {"name2", v.name2}, {"name3", v.name3}, {"name4", v.name4}};
+}
+
+void from_json(const json& j, fixed_name_object_t& v) {
+    j.at("name0").get_to(v.name0);
+    j.at("name1").get_to(v.name1);
+    j.at("name2").get_to(v.name2);
+    j.at("name3").get_to(v.name3);
+    j.at("name4").get_to(v.name4);
+}
+
+void to_json(json& j, const nested_object_t& v) {
+   j = json{{"v3s", v.v3s}, {"id", v.id}};
+}
+
+void from_json(const json& j, nested_object_t& v) {
+    j.at("v3s").get_to(v.v3s);
+    j.at("id").get_to(v.id);
+}
+
+void to_json(json& j, const another_object_t& v) {
+   j = json{{"string", v.string}, {"another_string", v.another_string}, {"boolean", v.boolean}, {"nested_object", v.nested_object}};
+}
+
+void from_json(const json& j, another_object_t& v) {
+    j.at("string").get_to(v.string);
+    j.at("another_string").get_to(v.another_string);
+    j.at("boolean").get_to(v.boolean);
+    j.at("nested_object").get_to(v.nested_object);
+}
+
+void to_json(json& j, const obj_t& v) {
+   j = json{{"fixed_object", v.fixed_object}, {"fixed_name_object", v.fixed_name_object}, {"another_object", v.another_object}, {"string_array", v.string_array}, {"string", v.string}, {"number", v.number}, {"boolean", v.boolean}, {"another_bool", v.another_bool}};
+}
+
+void from_json(const json& j, obj_t& v) {
+    j.at("fixed_object").get_to(v.fixed_object);
+    j.at("fixed_name_object").get_to(v.fixed_name_object);
+    j.at("another_object").get_to(v.another_object);
+    j.at("string_array").get_to(v.string_array);
+   j.at("string").get_to(v.string);
+   j.at("number").get_to(v.number);
+   j.at("boolean").get_to(v.boolean);
+   j.at("another_bool").get_to(v.another_bool);
+}
+
+void nlohmann_test()
+{
+   std::string buffer{ message };
+   
+   obj_t obj;
+   json j;
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         j = json::parse(buffer);
+         obj = j.get<obj_t>();
+         
+         j = obj;
+         buffer = j.dump();
+      }
+   } catch (const std::exception& e) {
+      std::cout << "daw_json_link error: " << e.what() << '\n';
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   std::cout << "daw_json_link runtime: " << runtime << '\n';
+}
+
 int main()
 {
    glaze_test();
+   daw_json_link_test();
+   nlohmann_test();
    
    return 0;
 }
