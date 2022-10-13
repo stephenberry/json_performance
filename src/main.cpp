@@ -376,6 +376,40 @@ void nlohmann_test()
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+#define JS_STL_ARRAY 1
+#include "json_struct/json_struct.h"
+
+JS_OBJ_EXT(fixed_object_t, int_array, float_array, double_array);
+JS_OBJ_EXT(fixed_name_object_t, name0, name1, name2, name3, name4);
+JS_OBJ_EXT(nested_object_t, v3s, id);
+JS_OBJ_EXT(another_object_t, string, another_string, boolean, nested_object);
+JS_OBJ_EXT(obj_t, fixed_object, fixed_name_object, another_object, string_array, string, number, boolean, another_bool);
+
+void json_struct_test()
+{
+   std::string buffer{ message };
+
+   obj_t obj;
+
+   auto t0 = std::chrono::steady_clock::now();
+
+   for (size_t i = 0; i < iterations; ++i) {
+     JS::ParseContext context(buffer);
+     context.track_member_assignement_state = false;
+     context.parseTo(obj);
+     if (context.error != JS::Error::NoError)
+     {
+      std::cout << "json_struct error: " << context.makeErrorString() << '\n';
+     }
+     buffer.clear();
+     buffer = JS::serializeStruct(obj);
+   }
+   auto t1 = std::chrono::steady_clock::now();
+
+   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   std::cout << "json_struct runtime: " << runtime << '\n';
+}
 
 
 int main()
@@ -383,6 +417,7 @@ int main()
    glaze_test();
    daw_json_link_test();
    nlohmann_test();
+   json_struct_test();
    
    return 0;
 }

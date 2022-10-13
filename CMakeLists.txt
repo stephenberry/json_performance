@@ -50,9 +50,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(daw_json_link)
 
+FetchContent_Declare(
+  json_struct
+  GIT_REPOSITORY https://github.com/jorgen/json_struct
+  GIT_TAG master
+)
+FetchContent_MakeAvailable(json_struct)
+
 add_library(${PROJECT_NAME} INTERFACE)
 
-target_include_directories(${PROJECT_NAME} INTERFACE include ${rapidjson_SOURCE_DIR}/include ${jsoncons_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} INTERFACE include ${rapidjson_SOURCE_DIR}/include ${jsoncons_SOURCE_DIR}/include ${json_struct_SOURCE_DIR}/include)
 
 target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json glaze daw::daw-json-link)
 
