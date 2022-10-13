@@ -1,21 +1,177 @@
-MIT License
 
-Copyright (c) 2022 Stephen Berry
+#include "glaze/glaze.hpp"
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+static constexpr std::string_view message = R"(
+{
+   "fixed_object": {
+      "int_array": [0, 1, 2, 3, 4, 5, 6],
+      "float_array": [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+      "double_array": [3288398.238, 233e22, 289e-1, 0.928759872, 0.22222848, 0.1, 0.2, 0.3, 0.4]
+   },
+   "dynamic_object": {
+      "name0": "James",
+      "name1": "Abraham",
+      "name2": "Susan",
+      "name3": "Frank",
+      "name4": "Alicia"
+   },
+   "fixed_name_object": {
+      "name0": "James",
+      "name1": "Abraham",
+      "name2": "Susan",
+      "name3": "Frank",
+      "name4": "Alicia"
+   },
+   "another_object": {
+      "string": "here is some text",
+      "another_string": "Hello World",
+      "boolean": false,
+      "nested_object": {
+         "v3s": [[0.12345, 0.23456, 0.001345],
+                  [0.3894675, 97.39827, 297.92387],
+                  [18.18, 87.289, 2988.298]],
+         "id": "298728949872"
+      }
+   },
+   "fixed_string_array": ["Cat", "Dog", "Elephant", "Tiger"],
+   "string": "Hello world",
+   "number": 3.14,
+   "boolean": true
+}
+)";
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+#include <chrono>
+#include <iostream>
+#include <unordered_map>
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+struct fixed_object_t
+{
+   std::vector<int> int_array;
+   std::vector<float> float_array;
+   std::vector<double> double_array;
+};
+
+template <>
+struct glz::meta<fixed_object_t> {
+   using T = fixed_object_t;
+   static constexpr auto value = object(
+      "int_array", &T::int_array,
+      "float_array", &T::float_array,
+      "double_array", &T::double_array
+   );
+};
+
+struct fixed_name_object_t
+{
+   std::string name0{};
+   std::string name1{};
+   std::string name2{};
+   std::string name3{};
+   std::string name4{};
+};
+
+template <>
+struct glz::meta<fixed_name_object_t> {
+   using T = fixed_name_object_t;
+   static constexpr auto value = object(
+      "name0", &T::name0,
+      "name1", &T::name1,
+      "name2", &T::name2,
+      "name3", &T::name3,
+      "name4", &T::name4
+   );
+};
+
+struct nested_object_t
+{
+   std::vector<std::array<double, 3>> v3s{};
+   std::string id{};
+};
+
+template <>
+struct glz::meta<nested_object_t> {
+   using T = nested_object_t;
+   static constexpr auto value = object(
+      "v3s", &T::v3s,
+      "id", &T::id
+   );
+};
+
+struct another_object_t
+{
+   std::string string{};
+   std::string another_string{};
+   bool boolean{};
+   nested_object_t nested_object{};
+};
+
+template <>
+struct glz::meta<another_object_t> {
+   using T = another_object_t;
+   static constexpr auto value = object(
+      "string", &T::string,
+      "another_string", &T::another_string,
+      "boolean", &T::boolean,
+      "nested_object", &T::nested_object
+   );
+};
+
+struct obj_t
+{
+   fixed_object_t fixed_object{};
+   std::unordered_map<std::string, std::string> dynamic_object;
+   fixed_name_object_t fixed_name_object{};
+   another_object_t another_object{};
+   std::array<std::string, 4> fixed_string_array{};
+   std::string string{};
+   double number{};
+   bool boolean{};
+};
+
+template <>
+struct glz::meta<obj_t> {
+   using T = obj_t;
+   static constexpr auto value = object(
+      "fixed_object", &T::fixed_object,
+      "dynamic_object", &T::dynamic_object,
+      "fixed_name_object", &T::fixed_name_object,
+      "another_object", &T::another_object,
+      "fixed_string_array", &T::fixed_string_array,
+      "string", &T::string,
+      "number", &T::number,
+      "boolean", &T::boolean
+   );
+};
+
+static constexpr size_t iterations = 1000;
+
+void glaze_test()
+{
+   std::string buffer{ message };
+   
+   obj_t obj;
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         glz::read_json(obj, buffer);
+         glz::write_json(obj, buffer);
+      }
+   } catch (const std::exception& e) {
+      std::cout << "glaze error: " << e.what() << '\n';
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   std::cout << "glaze runtime: " << runtime << '\n';
+}
+
+int main()
+{
+   glaze_test();
+   
+   return 0;
+}
