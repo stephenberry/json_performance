@@ -8,7 +8,7 @@ Latest results (October, 13, 2022):
 | Library                                                      | Runtime (s) | Ratio    |
 | ------------------------------------------------------------ | ----------- | -------- |
 | [**Glaze**](https://github.com/stephenberry/glaze)           | **2.79**    | **1.0**  |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.45**    | **1.24** |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.13**    | **1.12** |
 | [**nlohmann json**](https://github.com/nlohmann/json)        | **18.51**   | **6.63** |
 
 Test object:
