@@ -360,23 +360,23 @@ void nlohmann_test()
          buffer = j.dump();
       }
    } catch (const std::exception& e) {
-      std::cout << "daw_json_link error: " << e.what() << '\n';
+      std::cout << "nlohmann error: " << e.what() << '\n';
    }
    
    auto t1 = std::chrono::steady_clock::now();
    
    auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   std::cout << "daw_json_link runtime: " << runtime << '\n';
+   std::cout << "nlohmann runtime: " << runtime << '\n';
 }
 
-#include "jsoncons/json.hpp"
+//#include "jsoncons/json.hpp"
 
-#include "rapidjson/document.h"
+/*#include "rapidjson/document.h"
 #include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
+#include "rapidjson/stringbuffer.h"*/
 
-#define JS_STL_ARRAY 1
+/*#define JS_STL_ARRAY 1
 #include "json_struct/json_struct.h"
 
 JS_OBJ_EXT(fixed_object_t, int_array, float_array, double_array);
@@ -409,7 +409,7 @@ void json_struct_test()
    auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
 
    std::cout << "json_struct runtime: " << runtime << '\n';
-}
+}*/
 
 
 int main()
@@ -417,7 +417,7 @@ int main()
    glaze_test();
    daw_json_link_test();
    nlohmann_test();
-   json_struct_test();
+   //json_struct_test();
    
    return 0;
 }
