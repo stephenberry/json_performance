@@ -267,7 +267,8 @@ void daw_json_link_test()
    try {
       for (size_t i = 0; i < iterations; ++i) {
          obj = daw::json::from_json<obj_t>(buffer);
-         buffer = daw::json::to_json(obj);
+         buffer.clear();
+         daw::json::to_json(obj, buffer);
       }
    } catch (const std::exception& e) {
       std::cout << "daw_json_link error: " << e.what() << '\n';
