@@ -344,6 +344,12 @@ void nlohmann_test()
    std::cout << "daw_json_link runtime: " << runtime << '\n';
 }
 
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+
+
+
 int main()
 {
    glaze_test();

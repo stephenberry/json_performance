@@ -24,6 +24,16 @@ CPMAddPackage(
 )
 
 FetchContent_Declare(
+        rapidjson
+        GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
+        GIT_TAG        master
+)
+FetchContent_GetProperties(rapidjson)
+if(NOT rapidjson_POPULATED)
+    FetchContent_Populate(rapidjson)
+endif()
+
+FetchContent_Declare(
   daw_json_link
   GIT_REPOSITORY https://github.com/beached/daw_json_link
   GIT_TAG release
@@ -32,7 +42,7 @@ FetchContent_MakeAvailable(daw_json_link)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
-target_include_directories(${PROJECT_NAME} INTERFACE include ${json_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} INTERFACE include ${rapidjson_SOURCE_DIR}/include)
 
 target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json glaze daw::daw-json-link)
 

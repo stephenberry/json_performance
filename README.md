@@ -1,7 +1,7 @@
 # json_performance
 Performance profiling of JSON libraries
 
-Latest results:
+Latest results (October, 13, 2022):
 
 >  1,000,000 read and write passes on a single core (MacBook Pro M1)
 
