@@ -46,6 +46,15 @@ Test object:
 }
 ```
 
+### Raw Buffer Performance
+
+You can get even better write performance by writing directly to a char buffer. However, you must have sufficiently allocated space in your buffer for the message. It is unsafe to use without thinking.
+
+| Library                                                      | Runtime (s) | Ratio    |
+| ------------------------------------------------------------ | ----------- | -------- |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.28**    | **1.0**  |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.58**    | **1.13** |
+
 # Registration Comparison
 
 > Even with Glaze being the fastest, it is also the cleanest for registration and automatic type deduction. Glaze doesn't require an additional to_json definition.
