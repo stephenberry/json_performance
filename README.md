@@ -7,9 +7,10 @@ Latest results (October, 13, 2022):
 
 | Library                                                      | Runtime (s) | Ratio    |
 | ------------------------------------------------------------ | ----------- | -------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.70**    | **1.0**  |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.13**    | **1.16** |
-| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.51**   | **6.86** |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.24**    | **1.0**  |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) (with unsafe raw buffer) | **2.58**    | **1.15** |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.13**    | **1.39** |
+| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.51**   | **8.26** |
 
 Test object:
 
@@ -45,15 +46,6 @@ Test object:
    "another_bool": false
 }
 ```
-
-### Raw Buffer Performance
-
-You can get even better write performance by writing directly to a char buffer. However, you must have sufficiently allocated space in your buffer for the message. It is unsafe to use without thinking.
-
-| Library                                                      | Runtime (s) | Ratio    |
-| ------------------------------------------------------------ | ----------- | -------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.28**    | **1.0**  |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.58**    | **1.13** |
 
 # Registration Comparison
 
