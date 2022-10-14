@@ -5,12 +5,12 @@ Latest results (October, 13, 2022):
 
 >  1,000,000 read and write passes on a single core (MacBook Pro M1)
 
-| Library                                                      | Runtime (s) | Ratio    |
-| ------------------------------------------------------------ | ----------- | -------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.24**    | **1.0**  |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) (with unsafe raw buffer) | **2.58**    | **1.15** |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.13**    | **1.39** |
-| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.51**   | **8.26** |
+| Library                                                      | Roundtrip Runtime (s) | Write (MB/s) | Read (MB/s) |
+| ------------------------------------------------------------ | --------------------- | ------------ | ----------- |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.27**              | **530.21**   | **533.34**  |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) (with unsafe raw buffer) | **2.59**              | **461.71**   | **460.97**  |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.18**              | **316.75**   | **460.11**  |
+| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.58**             | **76.47**    | **65.65**   |
 
 Test object:
 

@@ -147,11 +147,9 @@ struct glz::meta<obj_t> {
 };
 
 #ifdef NDEBUG
-//static constexpr size_t iterations = 1'000'000;
 static constexpr size_t iterations = 1'000'000;
 #else
 static constexpr size_t iterations = 100'000;
-//static constexpr size_t iterations = 100'000;
 #endif
 
 void glaze_test()
@@ -182,7 +180,44 @@ void glaze_test()
    
    auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   std::cout << "glaze runtime: " << runtime << '\n';
+   std::cout << "glaze roundtrip runtime: " << runtime << '\n';
+   
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      glz::write_json(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "glaze write_json size: " << buffer.size() << " bytes\n";
+   std::cout << "glaze write_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   // read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      glz::read_json(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "glaze read_json size: " << buffer.size() << " bytes\n";
+   std::cout << "glaze read_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   std::cout << '\n';
 }
 
 #include <daw/json/daw_json_link.h>
@@ -274,15 +309,6 @@ void daw_json_link_test()
          buffer.clear();
          daw::json::to_json(obj, buffer);
       }
-      
-      // raw buffer version (unsafe)
-      /*obj = daw::json::from_json<obj_t>(buffer);
-      buffer.clear( );
-      daw::json::to_json(obj, buffer);
-      for (size_t i = 0; i < iterations-1; ++i) {
-         obj = daw::json::from_json<obj_t>(buffer);
-         daw::json::to_json(obj, buffer.data());
-      }*/
    } catch (const std::exception& e) {
       std::cout << "daw_json_link error: " << e.what() << '\n';
    }
@@ -291,7 +317,104 @@ void daw_json_link_test()
    
    auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   std::cout << "daw_json_link runtime: " << runtime << '\n';
+   std::cout << "daw_json_link roundtrip runtime: " << runtime << '\n';
+   
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      buffer.clear();
+      daw::json::to_json(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "daw_json_link write_json size: " << buffer.size() << " bytes\n";
+   std::cout << "daw_json_link write_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   // read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      obj = daw::json::from_json<obj_t>(buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "daw_json_link read_json size: " << buffer.size() << " bytes\n";
+   std::cout << "daw_json_link read_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   // raw, unsafe buffer testing
+   t0 = std::chrono::steady_clock::now();
+   
+   try {
+      obj = daw::json::from_json<obj_t>(buffer);
+      buffer.clear();
+      daw::json::to_json(obj, buffer);
+      for (size_t i = 0; i < iterations-1; ++i) {
+         obj = daw::json::from_json<obj_t>(buffer);
+         daw::json::to_json(obj, buffer.data());
+      }
+   } catch (const std::exception& e) {
+      std::cout << "daw_json_link raw bufffer error: " << e.what() << '\n';
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   std::cout << "daw_json_link raw buffer roundtrip runtime: " << runtime << '\n';
+   
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+   
+   buffer.clear();
+   daw::json::to_json(obj, buffer);
+   for (size_t i = 0; i < iterations-1; ++i) {
+      daw::json::to_json(obj, buffer.data());
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "daw_json_link raw buffer write_json size: " << buffer.size() << " bytes\n";
+   std::cout << "daw_json_link raw buffer write_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   // read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   obj = daw::json::from_json<obj_t>(buffer);
+   for (size_t i = 0; i < iterations-1; ++i) {
+      obj = daw::json::from_json<obj_t>(buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "daw_json_link raw buffer read_json size: " << buffer.size() << " bytes\n";
+   std::cout << "daw_json_link raw buffer read_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   std::cout << '\n';
 }
 
 #include "nlohmann/json.hpp"
@@ -380,7 +503,46 @@ void nlohmann_test()
    
    auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   std::cout << "nlohmann runtime: " << runtime << '\n';
+   std::cout << "nlohmann roundtrip runtime: " << runtime << '\n';
+   
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      j = obj;
+      buffer = j.dump();
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "nlohmann write_json size: " << buffer.size() << " bytes\n";
+   std::cout << "nlohmann write_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   // read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      j = json::parse(buffer);
+      obj = j.get<obj_t>();
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "nlohmann read_json size: " << buffer.size() << " bytes\n";
+   std::cout << "nlohmann read_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   std::cout << '\n';
 }
 
 //#include "jsoncons/json.hpp"
