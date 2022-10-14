@@ -545,12 +545,6 @@ void nlohmann_test()
    std::cout << '\n';
 }
 
-//#include "jsoncons/json.hpp"
-
-/*#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"*/
-
 #define JS_STL_ARRAY 1
 #include "json_struct/json_struct.h"
 
@@ -624,6 +618,12 @@ void json_struct_test()
    
    std::cout << '\n';
 }
+
+//#include "jsoncons/json.hpp"
+
+/*#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"*/
 
 
 int main()
