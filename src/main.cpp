@@ -162,14 +162,18 @@ void glaze_test()
    
    auto t0 = std::chrono::steady_clock::now();
    
-   glz::read_json(obj, buffer);
-   glz::write_json(obj, buffer);
-   
    try {
       for (size_t i = 0; i < iterations; ++i) {
          glz::read_json(obj, buffer);
          glz::write_json(obj, buffer);
       }
+      
+      // raw buffer version (unsafe)
+      /*for (size_t i = 0; i < iterations; ++i) {
+         glz::read_json(obj, buffer);
+         const auto n = glz::write_json(obj, buffer.data());
+         buffer.resize(n);
+      }*/
    } catch (const std::exception& e) {
       std::cout << "glaze error: " << e.what() << '\n';
    }
@@ -270,6 +274,15 @@ void daw_json_link_test()
          buffer.clear();
          daw::json::to_json(obj, buffer);
       }
+      
+      // raw buffer version (unsafe)
+      /*obj = daw::json::from_json<obj_t>(buffer);
+      buffer.clear( );
+      daw::json::to_json(obj, buffer);
+      for (size_t i = 0; i < iterations-1; ++i) {
+         obj = daw::json::from_json<obj_t>(buffer);
+         daw::json::to_json(obj, buffer.data());
+      }*/
    } catch (const std::exception& e) {
       std::cout << "daw_json_link error: " << e.what() << '\n';
    }
