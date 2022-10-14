@@ -551,7 +551,7 @@ void nlohmann_test()
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"*/
 
-/*#define JS_STL_ARRAY 1
+#define JS_STL_ARRAY 1
 #include "json_struct/json_struct.h"
 
 JS_OBJ_EXT(fixed_object_t, int_array, float_array, double_array);
@@ -583,8 +583,47 @@ void json_struct_test()
 
    auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
 
-   std::cout << "json_struct runtime: " << runtime << '\n';
-}*/
+   std::cout << "json_struct roundtrip runtime: " << runtime << '\n';
+   
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      JS::ParseContext context(buffer);
+      context.parseTo(obj);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "json_struct write_json size: " << buffer.size() << " bytes\n";
+   std::cout << "json_struct write_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   // read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      buffer.clear();
+      buffer = JS::serializeStruct(obj);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "json_struct read_json size: " << buffer.size() << " bytes\n";
+   std::cout << "json_struct read_json: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   std::cout << '\n';
+}
 
 
 int main()
@@ -592,7 +631,7 @@ int main()
    glaze_test();
    daw_json_link_test();
    nlohmann_test();
-   //json_struct_test();
+   json_struct_test();
    
    return 0;
 }
