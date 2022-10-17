@@ -1,17 +1,17 @@
 # json_performance
 Performance profiling of JSON libraries
 
-Latest results (October, 13, 2022):
+Latest results (October, 17, 2022):
 
 >  1,000,000 read and write passes on a single core (MacBook Pro M1)
 
 | Library                                                      | Roundtrip Runtime (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | --------------------- | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.27**              | **530.21**   | **533.34**  |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) (with unsafe raw buffer) | **2.59**              | **461.71**   | **460.97**  |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.18**              | **316.75**   | **460.11**  |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **8.31**              | **467.03**   | **172.73**  |
-| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.58**             | **76.47**    | **65.65**   |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.87**              | **635**      | **645**     |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) (with unsafe raw buffer) | **2.59**              | **462**      | **461**     |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.18**              | **317**      | **460**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **8.31**              | **467**      | **173**     |
+| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.58**             | **76**       | **66**      |
 
 Test object:
 
