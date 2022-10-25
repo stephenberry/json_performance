@@ -102,10 +102,6 @@ struct daw::json::json_data_contract<obj_t> {
 ## json_struct
 
 ```c++
-JS_OBJ_EXT(fixed_object_t, int_array, float_array, double_array);
-JS_OBJ_EXT(fixed_name_object_t, name0, name1, name2, name3, name4);
-JS_OBJ_EXT(nested_object_t, v3s, id);
-JS_OBJ_EXT(another_object_t, string, another_string, boolean, nested_object);
 JS_OBJ_EXT(obj_t, fixed_object, fixed_name_object, another_object, string_array, string, number, boolean, another_bool);
 ```
 
