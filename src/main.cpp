@@ -218,6 +218,50 @@ void glaze_test()
              << "\n";
    
    std::cout << '\n';
+   
+   // binary write performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         glz::write_binary(obj, buffer);
+      }
+   } catch (const std::exception& e) {
+      std::cout << "glaze binary error: " << e.what() << '\n';
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "glaze write_binary size: " << buffer.size() << " bytes\n";
+   std::cout << "glaze write_binary: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   // binary read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         glz::read_binary(obj, buffer);
+      }
+   } catch (const std::exception& e) {
+      std::cout << "glaze binary error: " << e.what() << '\n';
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "glaze read_binary size: " << buffer.size() << " bytes\n";
+   std::cout << "glaze read_binary: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
 }
 
 #include <daw/json/daw_json_link.h>
@@ -629,9 +673,9 @@ void json_struct_test()
 int main()
 {
    glaze_test();
-   daw_json_link_test();
-   nlohmann_test();
-   json_struct_test();
+   //daw_json_link_test();
+   //nlohmann_test();
+   //json_struct_test();
    
    return 0;
 }

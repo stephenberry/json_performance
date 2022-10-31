@@ -61,7 +61,7 @@ add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE include ${rapidjson_SOURCE_DIR}/include ${jsoncons_SOURCE_DIR}/include ${json_struct_SOURCE_DIR}/include)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json glaze daw::daw-json-link)
+target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link)
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 
