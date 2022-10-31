@@ -262,6 +262,27 @@ void glaze_test()
    std::cout << "glaze read_binary: " << runtime << " s, " << mbytes_per_sec
              << " MB/s"
              << "\n";
+   
+   // binary round trip
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      glz::read_binary(obj, buffer);
+      glz::write_binary(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
+   std::cout << "glaze roundtrip size: " << buffer.size() << " bytes\n";
+   std::cout << "glaze roundtrip: " << runtime << " s, " << mbytes_per_sec
+             << " MB/s"
+             << "\n";
+   
+   std::cout << '\n';
 }
 
 #include <daw/json/daw_json_link.h>
