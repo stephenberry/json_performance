@@ -48,6 +48,19 @@ Test object:
 }
 ```
 
+## ABC Test
+
+In this test the JSON document has keys from "a" to "z", where each key refers to an array of integers from [0, 999]. The document orders the keys from "z" to "a", in reverse order to the expected "a" to "z" layout.
+
+This test demonstrates problems with `simdjson` and iterative parsers that do cannot hash for memory locations. If keys are not in the expected sequence performance can seriously suffer, and problem increases as the size of the document increases.
+
+Hash based solutions avoid this problem and do not suffer performance loss as the JSON document grows in size.
+
+| Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
+| ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **3.80**           | **678**      | **408**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **111**     |
+
 # Registration Comparison
 
 > Even with Glaze being the fastest, it is also the cleanest (without macros) for registration and automatic type deduction. Glaze doesn't require an additional to_json definition.

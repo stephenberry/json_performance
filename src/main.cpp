@@ -145,7 +145,7 @@ struct glz::meta<obj_t> {
 // for testing large, flat documents and out of sequence reading
 struct abc_t
 {
-   std::vector<double> a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
+   std::vector<int64_t> a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
    
    abc_t() {
       auto fill = [](auto& v) {
@@ -860,7 +860,7 @@ private:
   ondemand::parser parser{};
 };
 
-#define SIMD_PULL(x) ondemand::array x = doc[#x]; obj.x.clear(); for (double value : x) { obj.x.emplace_back(value); }
+#define SIMD_PULL(x) ondemand::array x = doc[#x]; obj.x.clear(); for (int64_t value : x) { obj.x.emplace_back(value); }
 
 bool on_demand_abc::read(abc_t& obj, const padded_string &json) {
   auto doc = parser.iterate(json);
