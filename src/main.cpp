@@ -142,10 +142,37 @@ struct glz::meta<obj_t> {
 /*GLZ_META(obj_t, fixed_object, fixed_name_object, another_object,
          string_array, string, number, boolean, another_bool);*/
 
+// for testing large, flat documents and out of sequence reading
+struct abc_t
+{
+   std::vector<double> a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
+   
+   abc_t() {
+      auto fill = [](auto& v) {
+         v.resize(1000);
+         std::iota(v.begin(), v.end(), 0);
+      };
+      
+      fill(a); fill(b); fill(c);
+      fill(d); fill(e); fill(f);
+      fill(g); fill(h); fill(i);
+      fill(j); fill(k); fill(l);
+      fill(m); fill(n); fill(o);
+      fill(p); fill(q); fill(r);
+      fill(s); fill(t); fill(u);
+      fill(v); fill(w); fill(x);
+      fill(y); fill(z);
+   }
+};
+
+GLZ_META(abc_t, z,y,x,w,v,u,t,s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a);
+
 #ifdef NDEBUG
 static constexpr size_t iterations = 1'000'000;
+static constexpr size_t iterations_abc = 10'000;
 #else
 static constexpr size_t iterations = 100'000;
+static constexpr size_t iterations_abc = 1'000;
 #endif
 
 struct results
@@ -340,6 +367,57 @@ auto glaze_test()
    t1 = std::chrono::steady_clock::now();
    
    r.binary_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   r.print();
+   
+   return r;
+}
+
+auto glaze_abc_test()
+{
+   std::string buffer{};
+   
+   abc_t obj{};
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations_abc; ++i) {
+         glz::write_json(obj, buffer);
+         glz::read_json(obj, buffer);
+      }
+   } catch (const std::exception& e) {
+      std::cout << "glaze error: " << e.what() << '\n';
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   results r{ "Glaze", "https://github.com/stephenberry/glaze", iterations_abc };
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations_abc; ++i) {
+      glz::write_json(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   // read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations_abc; ++i) {
+      glz::read_json(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    r.print();
    
@@ -677,8 +755,6 @@ using namespace simdjson;
 
 struct on_demand {
    bool read_in_order(obj_t& obj, const padded_string &json);
-   
-   bool read_out_of_order(obj_t& obj, const padded_string &json);
 private:
   ondemand::parser parser{};
 };
@@ -778,6 +854,70 @@ auto simdjson_test()
    return r;
 }
 
+struct on_demand_abc {
+   bool read(abc_t& obj, const padded_string &json);
+private:
+  ondemand::parser parser{};
+};
+
+#define SIMD_PULL(x) ondemand::array x = doc[#x]; obj.x.clear(); for (double value : x) { obj.x.emplace_back(value); }
+
+bool on_demand_abc::read(abc_t& obj, const padded_string &json) {
+  auto doc = parser.iterate(json);
+   
+   SIMD_PULL(a); SIMD_PULL(b); SIMD_PULL(c);
+   SIMD_PULL(d); SIMD_PULL(e); SIMD_PULL(f);
+   SIMD_PULL(g); SIMD_PULL(h); SIMD_PULL(i);
+   SIMD_PULL(j); SIMD_PULL(k); SIMD_PULL(l);
+   SIMD_PULL(m); SIMD_PULL(n); SIMD_PULL(o);
+   SIMD_PULL(p); SIMD_PULL(q); SIMD_PULL(r);
+   SIMD_PULL(s); SIMD_PULL(t); SIMD_PULL(u);
+   SIMD_PULL(v); SIMD_PULL(w); SIMD_PULL(x);
+   SIMD_PULL(y); SIMD_PULL(z);
+   
+  return false;
+}
+
+auto simdjson_abc_test()
+{
+   abc_t obj{};
+   
+   std::string buffer = glz::write_json(obj);
+   std::string minified = buffer;
+   
+   size_t new_length{}; // It will receive the minified length.
+   [[maybe_unused]] auto error = simdjson::minify(buffer.data(), buffer.size(), minified.data(), new_length);
+   minified.resize(new_length);
+   
+   padded_string padded = minified;
+   
+   on_demand_abc parser{};
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations_abc; ++i) {
+         const auto error = parser.read(obj, padded);
+         if (error) {
+           std::cerr << "simdjson error" << std::endl;
+         }
+      }
+   } catch (const std::exception& e) {
+      std::cout << "simdjson exception error: " << e.what() << '\n';
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   results r{ "simdjson (on demand)", "https://github.com/simdjson/simdjson", iterations_abc };
+   
+   r.json_byte_length = padded.size();
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   r.print();
+   
+   return r;
+}
+
 //#include "jsoncons/json.hpp"
 
 /*#include "rapidjson/document.h"
@@ -788,7 +928,7 @@ static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
 
-int main()
+void test0()
 {
    std::vector<results> results;
    results.emplace_back(glaze_test());
@@ -797,7 +937,7 @@ int main()
    results.emplace_back(json_struct_test());
    results.emplace_back(nlohmann_test());
    
-   std::ofstream table{ "json_stats.md" };
+   std::ofstream table{ "json_stats0.md" };
    if (table) {
       const auto n = results.size();
       table << table_header << '\n';
@@ -808,6 +948,31 @@ int main()
          }
       }
    }
+}
+
+void abc_test()
+{
+   std::vector<results> results;
+   results.emplace_back(glaze_abc_test());
+   results.emplace_back(simdjson_abc_test());
+   
+   std::ofstream table{ "json_stats_abc.md" };
+   if (table) {
+      const auto n = results.size();
+      table << table_header << '\n';
+      for (size_t i = 0; i < n; ++i) {
+         table << results[i].json_stats();
+         if (i != n - 1) {
+            table << '\n';
+         }
+      }
+   }
+}
+
+int main()
+{
+   //test0();
+   abc_test();
    
    return 0;
 }
