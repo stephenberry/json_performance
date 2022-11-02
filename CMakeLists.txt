@@ -57,11 +57,22 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(json_struct)
 
+FetchContent_Declare(
+  simdjson
+  GIT_REPOSITORY https://github.com/simdjson/simdjson.git
+  GIT_TAG  v3.0.0
+  GIT_SHALLOW TRUE)
+
+set(SIMDJSON_JUST_LIBRARY ON CACHE INTERNAL "")
+set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
+ 
+FetchContent_MakeAvailable(simdjson)
+
 add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE include ${rapidjson_SOURCE_DIR}/include ${jsoncons_SOURCE_DIR}/include ${json_struct_SOURCE_DIR}/include)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link)
+target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson)
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
 

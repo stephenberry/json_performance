@@ -669,6 +669,115 @@ auto json_struct_test()
    return r;
 }
 
+#include "simdjson.h"
+
+// Note: the on demand parser does not allow multiple instances of the same key with different data specified
+
+using namespace simdjson;
+
+struct on_demand {
+   bool read_in_order(obj_t& obj, const padded_string &json);
+   
+   bool read_out_of_order(obj_t& obj, const padded_string &json);
+private:
+  ondemand::parser parser{};
+};
+
+bool on_demand::read_in_order(obj_t& obj, const padded_string &json) {
+  auto doc = parser.iterate(json);
+   ondemand::object fixed_object = doc["fixed_object"];
+   
+   ondemand::array int_array = fixed_object["int_array"];
+   obj.fixed_object.int_array.clear();
+   for (int64_t x : int_array) { obj.fixed_object.int_array.emplace_back(x); }
+   
+   ondemand::array float_array = fixed_object["float_array"];
+   obj.fixed_object.float_array.clear();
+   // doesn't have a direct float conversion
+   for (double x : float_array) { obj.fixed_object.float_array.emplace_back(static_cast<float>(x)); }
+   
+   ondemand::array double_array = fixed_object["double_array"];
+   obj.fixed_object.double_array.clear();
+   for (double x : double_array) { obj.fixed_object.double_array.emplace_back(x); }
+   
+   ondemand::object fixed_name_object = doc["fixed_name_object"];
+   obj.fixed_name_object.name0 = std::string_view(fixed_name_object["name0"]);
+   obj.fixed_name_object.name1 = std::string_view(fixed_name_object["name1"]);
+   obj.fixed_name_object.name2 = std::string_view(fixed_name_object["name2"]);
+   obj.fixed_name_object.name3 = std::string_view(fixed_name_object["name3"]);
+   obj.fixed_name_object.name4 = std::string_view(fixed_name_object["name4"]);
+   
+   ondemand::object another_object = doc["another_object"];
+   obj.another_object.string = std::string_view(another_object["string"]);
+   obj.another_object.another_string = std::string_view(another_object["another_string"]);
+   obj.another_object.boolean = bool(another_object["boolean"]);
+   
+   ondemand::object nested_object = another_object["nested_object"];
+   ondemand::array v3s = nested_object["v3s"];
+   obj.another_object.nested_object.v3s.clear();
+   for (ondemand::array v3 : v3s) {
+      size_t i = 0;
+      auto& back = obj.another_object.nested_object.v3s.emplace_back();
+      for (double x : v3) {
+         back[i++] = x;
+      }
+   }
+   
+   obj.another_object.nested_object.id = std::string_view(nested_object["id"]);
+   
+   ondemand::array string_array = doc["string_array"];
+   obj.string_array.resize(string_array.count_elements());
+   size_t index = 0;
+   for (std::string_view x : string_array) { obj.string_array[index++] = x; }
+   
+   obj.string = std::string_view(doc["string"]);
+   obj.number = double(doc["number"]);
+   obj.boolean = bool(doc["boolean"]);
+   obj.another_bool = bool(doc["another_bool"]);
+   
+  return false;
+}
+
+auto simdjson_test()
+{
+   std::string buffer{ json0 };
+   std::string minified = buffer;
+   
+   size_t new_length{}; // It will receive the minified length.
+   [[maybe_unused]] auto error = simdjson::minify(buffer.data(), buffer.size(), minified.data(), new_length);
+   minified.resize(new_length);
+   
+   padded_string padded = minified;
+   
+   on_demand parser{};
+   
+   obj_t obj{};
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         const auto error = parser.read_in_order(obj, padded);
+         if (error) {
+           std::cerr << "simdjson error" << std::endl;
+         }
+      }
+   } catch (const std::exception& e) {
+      std::cout << "simdjson exception error: " << e.what() << '\n';
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   results r{ "simdjson (on demand)", "https://github.com/simdjson/simdjson", iterations };
+   
+   r.json_byte_length = padded.size();
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   r.print();
+   
+   return r;
+}
+
 //#include "jsoncons/json.hpp"
 
 /*#include "rapidjson/document.h"
@@ -683,6 +792,7 @@ int main()
 {
    std::vector<results> results;
    results.emplace_back(glaze_test());
+   results.emplace_back(simdjson_test());
    results.emplace_back(daw_json_link_test());
    results.emplace_back(json_struct_test());
    results.emplace_back(nlohmann_test());
