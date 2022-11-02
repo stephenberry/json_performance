@@ -3,7 +3,7 @@ Performance profiling of JSON libraries
 
 Latest results (November 2, 2022):
 
->  1,000,000 read and write passes on a single core (MacBook Pro M1)
+>  1,000,000 iterations on a single core (MacBook Pro M1)
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
