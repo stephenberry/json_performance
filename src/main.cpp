@@ -148,6 +148,86 @@ static constexpr size_t iterations = 1'000'000;
 static constexpr size_t iterations = 100'000;
 #endif
 
+struct results
+{
+   std::string_view library_name{};
+   size_t iterations{};
+   
+   std::optional<size_t> json_byte_length{};
+   std::optional<double> json_read{};
+   std::optional<double> json_write{};
+   std::optional<double> json_roundtrip{};
+   
+   std::optional<size_t> binary_byte_length{};
+   std::optional<double> binary_write{};
+   std::optional<double> binary_read{};
+   std::optional<double> binary_roundtrip{};
+   
+   void print()
+   {
+      std::cout << library_name << ":\n";
+      if (json_roundtrip) {
+         std::cout << "json roundtrip: " << *json_roundtrip << " s\n";
+      }
+      
+      if (json_byte_length) {
+         std::cout << "json byte length: " << *json_byte_length << '\n';
+      }
+      
+      if (json_write) {
+         if (json_byte_length) {
+            const auto MBs = iterations * *json_byte_length / (*json_write * 1048576);
+            std::cout << "json write: " << *json_write << " s, " << MBs << " MB/s\n";
+         }
+         else {
+            std::cout << "json write: " << *json_write << " s\n";
+         }
+      }
+      
+      if (json_read) {
+         if (json_byte_length) {
+            const auto MBs = iterations * *json_byte_length / (*json_read * 1048576);
+            std::cout << "json read: " << *json_read << " s, " << MBs << " MB/s\n";
+         }
+         else {
+            std::cout << "json read: " << *json_read << " s\n";
+         }
+      }
+      
+      std::cout << '\n';
+      
+      if (binary_roundtrip) {
+         std::cout << "binary roundtrip: " << *binary_roundtrip << " s\n";
+      }
+      
+      if (binary_byte_length) {
+         std::cout << "binary byte length: " << *binary_byte_length << '\n';
+      }
+      
+      if (binary_write) {
+         if (binary_byte_length) {
+            const auto MBs = iterations * *binary_byte_length / (*binary_write * 1048576);
+            std::cout << "binary write: " << *binary_write << " s, " << MBs << " MB/s\n";
+         }
+         else {
+            std::cout << "binary write: " << *binary_write << " s\n";
+         }
+      }
+      
+      if (binary_read) {
+         if (binary_byte_length) {
+            const auto MBs = iterations * *binary_byte_length / (*binary_read * 1048576);
+            std::cout << "binary read: " << *binary_read << " s, " << MBs << " MB/s\n";
+         }
+         else {
+            std::cout << "binary read: " << *binary_read << " s\n";
+         }
+      }
+      
+      std::cout << "\n---\n" << std::endl;
+   }
+};
+
 void glaze_test()
 {
    std::string buffer{ json0 };
@@ -174,9 +254,8 @@ void glaze_test()
    
    auto t1 = std::chrono::steady_clock::now();
    
-   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   std::cout << "glaze roundtrip runtime: " << runtime << '\n';
+   results r{ "glaze", iterations };
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // write performance
    t0 = std::chrono::steady_clock::now();
@@ -187,13 +266,8 @@ void glaze_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "glaze write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze write_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // read performance
    
@@ -205,13 +279,7 @@ void glaze_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "glaze read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
-   
-   std::cout << '\n';
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // binary write performance
    
@@ -227,11 +295,8 @@ void glaze_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "glaze write_binary size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze write_binary: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
+   r.binary_byte_length = buffer.size();
+   r.binary_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // binary read performance
    
@@ -247,11 +312,7 @@ void glaze_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "glaze read_binary size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze read_binary: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
+   r.binary_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // binary round trip
    
@@ -264,13 +325,9 @@ void glaze_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   r.binary_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "glaze roundtrip size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze roundtrip: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
-   
-   std::cout << '\n';
+   r.print();
 }
 
 #include <daw/json/daw_json_link.h>
@@ -662,6 +719,15 @@ void json_struct_test()
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"*/
 
+static constexpr std::string_view markdown_table = R"(
+| Library                                                      | Roundtrip Runtime (s) | Write (MB/s) | Read (MB/s) |
+| ------------------------------------------------------------ | --------------------- | ------------ | ----------- |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.87**              | **635**      | **645**     |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) (with unsafe raw buffer) | **2.59**              | **462**      | **461**     |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.18**              | **317**      | **460**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **8.31**              | **467**      | **173**     |
+| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.58**             | **76**       | **66**      |
+)";
 
 int main()
 {
