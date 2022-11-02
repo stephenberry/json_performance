@@ -7,10 +7,11 @@ Latest results (November 2, 2022):
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.83**           | **661**      | **648**     |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.27**           | **305**      | **467**     |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **5.43**           | **322**      | **470**     |
-| [**nlohmann**](https://github.com/nlohmann/json)             | **19.07**          | **75**       | **66**      |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.81**           | **658**      | **663**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1260**    |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.27**           | **308**      | **450**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **5.43**           | **323**      | **468**     |
+| [**nlohmann**](https://github.com/nlohmann/json)             | **18.68**          | **77**       | **66**      |
 
 Test object:
 
