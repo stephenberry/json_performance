@@ -71,6 +71,13 @@ struct glz::meta<obj_t> {
 };
 ```
 
+Or using macros:
+
+```c++
+GLZ_META(obj_t, fixed_object, fixed_name_object, another_object,
+         string_array, string, number, boolean, another_bool);
+```
+
 ## daw_json_link
 
 ```c++

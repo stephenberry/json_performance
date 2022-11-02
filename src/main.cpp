@@ -1,7 +1,8 @@
 
 #include "glaze/glaze.hpp"
+#include "glaze/core/macros.hpp"
 
-static constexpr std::string_view message = R"(
+static constexpr std::string_view json0 = R"(
 {
    "fixed_object": {
       "int_array": [0, 1, 2, 3, 4, 5, 6],
@@ -33,15 +34,6 @@ static constexpr std::string_view message = R"(
    "another_bool": false
 }
 )";
-
-/*static constexpr std::string_view message = R"(
-{
-   "string": "Hello world",
-   "number": 3.14,
-   "boolean": true,
-   "another_bool": false
-}
-)";*/
 
 #include <chrono>
 #include <iostream>
@@ -146,6 +138,10 @@ struct glz::meta<obj_t> {
    );
 };
 
+// Or, use macros for Glaze registration
+/*GLZ_META(obj_t, fixed_object, fixed_name_object, another_object,
+         string_array, string, number, boolean, another_bool);*/
+
 #ifdef NDEBUG
 static constexpr size_t iterations = 1'000'000;
 #else
@@ -154,7 +150,7 @@ static constexpr size_t iterations = 100'000;
 
 void glaze_test()
 {
-   std::string buffer{ message };
+   std::string buffer{ json0 };
    
    obj_t obj;
    
@@ -362,7 +358,7 @@ struct daw::json::json_data_contract<obj_t> {
 
 void daw_json_link_test()
 {
-   std::string buffer{ message };
+   std::string buffer{ json0 };
    
    obj_t obj;
    
@@ -545,7 +541,7 @@ void from_json(const json& j, obj_t& v) {
 
 void nlohmann_test()
 {
-   std::string buffer{ message };
+   std::string buffer{ json0 };
    
    obj_t obj;
    json j;
@@ -621,7 +617,7 @@ JS_OBJ_EXT(obj_t, fixed_object, fixed_name_object, another_object, string_array,
 
 void json_struct_test()
 {
-   std::string buffer{ message };
+   std::string buffer{ json0 };
 
    obj_t obj;
 
