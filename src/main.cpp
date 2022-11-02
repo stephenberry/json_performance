@@ -971,7 +971,7 @@ void abc_test()
 
 int main()
 {
-   //test0();
+   test0();
    abc_test();
    
    return 0;
