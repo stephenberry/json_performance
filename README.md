@@ -52,7 +52,7 @@ Test object:
 
 In this test the JSON document has keys from "a" to "z", where each key refers to an array of integers from [0, 999]. The document orders the keys from "z" to "a", in reverse order to the expected "a" to "z" layout.
 
-This test demonstrates problems with `simdjson` and iterative parsers that do cannot hash for memory locations. If keys are not in the expected sequence performance can seriously suffer, and problem increases as the size of the document increases.
+This test demonstrates problems with `simdjson` and iterative parsers that cannot hash for memory locations. If keys are not in the expected sequence performance seriously suffers, and problem increases as the size of the document increases.
 
 Hash based solutions avoid this problem and do not suffer performance loss as the JSON document grows in size.
 
