@@ -150,7 +150,7 @@ static constexpr size_t iterations = 100'000;
 
 struct results
 {
-   std::string_view library_name{};
+   std::string_view name{};
    size_t iterations{};
    
    std::optional<size_t> json_byte_length{};
@@ -165,62 +165,60 @@ struct results
    
    void print()
    {
-      std::cout << library_name << ":\n";
       if (json_roundtrip) {
-         std::cout << "json roundtrip: " << *json_roundtrip << " s\n";
+         std::cout << name << " json roundtrip: " << *json_roundtrip << " s\n";
       }
       
       if (json_byte_length) {
-         std::cout << "json byte length: " << *json_byte_length << '\n';
+         std::cout << name << " json byte length: " << *json_byte_length << '\n';
       }
       
       if (json_write) {
          if (json_byte_length) {
             const auto MBs = iterations * *json_byte_length / (*json_write * 1048576);
-            std::cout << "json write: " << *json_write << " s, " << MBs << " MB/s\n";
+            std::cout << name << " json write: " << *json_write << " s, " << MBs << " MB/s\n";
          }
          else {
-            std::cout << "json write: " << *json_write << " s\n";
+            std::cout << name << " json write: " << *json_write << " s\n";
          }
       }
       
       if (json_read) {
          if (json_byte_length) {
             const auto MBs = iterations * *json_byte_length / (*json_read * 1048576);
-            std::cout << "json read: " << *json_read << " s, " << MBs << " MB/s\n";
+            std::cout << name << " json read: " << *json_read << " s, " << MBs << " MB/s\n";
          }
          else {
-            std::cout << "json read: " << *json_read << " s\n";
+            std::cout << name << " json read: " << *json_read << " s\n";
          }
       }
       
-      std::cout << '\n';
-      
       if (binary_roundtrip) {
-         std::cout << "binary roundtrip: " << *binary_roundtrip << " s\n";
+         std::cout << '\n';
+         std::cout << name << " binary roundtrip: " << *binary_roundtrip << " s\n";
       }
       
       if (binary_byte_length) {
-         std::cout << "binary byte length: " << *binary_byte_length << '\n';
+         std::cout << name << " binary byte length: " << *binary_byte_length << '\n';
       }
       
       if (binary_write) {
          if (binary_byte_length) {
             const auto MBs = iterations * *binary_byte_length / (*binary_write * 1048576);
-            std::cout << "binary write: " << *binary_write << " s, " << MBs << " MB/s\n";
+            std::cout << name << " binary write: " << *binary_write << " s, " << MBs << " MB/s\n";
          }
          else {
-            std::cout << "binary write: " << *binary_write << " s\n";
+            std::cout << name << " binary write: " << *binary_write << " s\n";
          }
       }
       
       if (binary_read) {
          if (binary_byte_length) {
             const auto MBs = iterations * *binary_byte_length / (*binary_read * 1048576);
-            std::cout << "binary read: " << *binary_read << " s, " << MBs << " MB/s\n";
+            std::cout << name << " binary read: " << *binary_read << " s, " << MBs << " MB/s\n";
          }
          else {
-            std::cout << "binary read: " << *binary_read << " s\n";
+            std::cout << name << " binary read: " << *binary_read << " s\n";
          }
       }
       
@@ -425,9 +423,9 @@ void daw_json_link_test()
    
    auto t1 = std::chrono::steady_clock::now();
    
-   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   results r{ "daw_json_link", iterations };
    
-   std::cout << "daw_json_link roundtrip runtime: " << runtime << '\n';
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // write performance
    t0 = std::chrono::steady_clock::now();
@@ -439,11 +437,8 @@ void daw_json_link_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "daw_json_link write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // read performance
    
@@ -455,35 +450,12 @@ void daw_json_link_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "daw_json_link read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
+   r.print();
    
-   // raw, unsafe buffer testing
-   t0 = std::chrono::steady_clock::now();
-   
-   try {
-      obj = daw::json::from_json<obj_t>(buffer);
-      buffer.clear();
-      daw::json::to_json(obj, buffer);
-      for (size_t i = 0; i < iterations-1; ++i) {
-         obj = daw::json::from_json<obj_t>(buffer);
-         daw::json::to_json(obj, buffer.data());
-      }
-   } catch (const std::exception& e) {
-      std::cout << "daw_json_link raw bufffer error: " << e.what() << '\n';
-   }
-   
-   t1 = std::chrono::steady_clock::now();
-   
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   std::cout << "daw_json_link raw buffer roundtrip runtime: " << runtime << '\n';
-   
-   // write performance
-   t0 = std::chrono::steady_clock::now();
+   // raw (unsafe) write performance
+   /*t0 = std::chrono::steady_clock::now();
    
    buffer.clear();
    daw::json::to_json(obj, buffer);
@@ -491,32 +463,7 @@ void daw_json_link_test()
       daw::json::to_json(obj, buffer.data());
    }
    
-   t1 = std::chrono::steady_clock::now();
-   
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "daw_json_link raw buffer write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link raw buffer write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
-   
-   // read performance
-   
-   t0 = std::chrono::steady_clock::now();
-   
-   obj = daw::json::from_json<obj_t>(buffer);
-   for (size_t i = 0; i < iterations-1; ++i) {
-      obj = daw::json::from_json<obj_t>(buffer);
-   }
-   
-   t1 = std::chrono::steady_clock::now();
-   
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "daw_json_link raw buffer read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link raw buffer read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
-   
-   std::cout << '\n';
+   t1 = std::chrono::steady_clock::now();*/
 }
 
 #include "nlohmann/json.hpp"
@@ -603,9 +550,9 @@ void nlohmann_test()
    
    auto t1 = std::chrono::steady_clock::now();
    
-   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   results r{ "nlohmann", iterations };
    
-   std::cout << "nlohmann roundtrip runtime: " << runtime << '\n';
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // write performance
    t0 = std::chrono::steady_clock::now();
@@ -617,11 +564,8 @@ void nlohmann_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "nlohmann write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "nlohmann write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // read performance
    
@@ -634,13 +578,9 @@ void nlohmann_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "nlohmann read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "nlohmann read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
-   
-   std::cout << '\n';
+   r.print();
 }
 
 #define JS_STL_ARRAY 1
@@ -664,36 +604,19 @@ void json_struct_test()
      JS::ParseContext context(buffer);
      context.track_member_assignement_state = false;
      context.parseTo(obj);
-     if (context.error != JS::Error::NoError)
-     {
-      std::cout << "json_struct error: " << context.makeErrorString() << '\n';
+     if (context.error != JS::Error::NoError) {
+        std::cout << "json_struct error: " << context.makeErrorString() << '\n';
      }
      buffer.clear();
      buffer = JS::serializeStruct(obj);
    }
    auto t1 = std::chrono::steady_clock::now();
+   
+   results r{ "json_struct", iterations };
 
-   auto runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-
-   std::cout << "json_struct roundtrip runtime: " << runtime << '\n';
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // write performance
-   t0 = std::chrono::steady_clock::now();
-   
-   for (size_t i = 0; i < iterations; ++i) {
-      JS::ParseContext context(buffer);
-      context.parseTo(obj);
-   }
-   
-   t1 = std::chrono::steady_clock::now();
-   
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
-   auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "json_struct write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "json_struct write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
-   
-   // read performance
    
    t0 = std::chrono::steady_clock::now();
    
@@ -704,13 +627,22 @@ void json_struct_test()
    
    t1 = std::chrono::steady_clock::now();
    
-   runtime = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
-   std::cout << "json_struct read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "json_struct read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
+   // read performance
+   t0 = std::chrono::steady_clock::now();
    
-   std::cout << '\n';
+   for (size_t i = 0; i < iterations; ++i) {
+      JS::ParseContext context(buffer);
+      context.parseTo(obj);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   r.print();
 }
 
 //#include "jsoncons/json.hpp"
@@ -731,9 +663,9 @@ static constexpr std::string_view markdown_table = R"(
 
 int main()
 {
-   glaze_test();
-   daw_json_link_test();
-   nlohmann_test();
+   //glaze_test();
+   //daw_json_link_test();
+   //nlohmann_test();
    json_struct_test();
    
    return 0;
