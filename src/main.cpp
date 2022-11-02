@@ -209,9 +209,7 @@ void glaze_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "glaze read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze read_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "glaze read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    std::cout << '\n';
    
@@ -233,9 +231,7 @@ void glaze_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "glaze write_binary size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze write_binary: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "glaze write_binary: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    // binary read performance
    
@@ -255,9 +251,7 @@ void glaze_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "glaze read_binary size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze read_binary: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "glaze read_binary: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    // binary round trip
    
@@ -274,9 +268,7 @@ void glaze_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "glaze roundtrip size: " << buffer.size() << " bytes\n";
-   std::cout << "glaze roundtrip: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "glaze roundtrip: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    std::cout << '\n';
 }
@@ -394,9 +386,7 @@ void daw_json_link_test()
    
    auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "daw_json_link write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link write_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "daw_json_link write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    // read performance
    
@@ -412,9 +402,7 @@ void daw_json_link_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "daw_json_link read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link read_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "daw_json_link read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    // raw, unsafe buffer testing
    t0 = std::chrono::steady_clock::now();
@@ -452,9 +440,7 @@ void daw_json_link_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "daw_json_link raw buffer write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link raw buffer write_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "daw_json_link raw buffer write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    // read performance
    
@@ -471,9 +457,7 @@ void daw_json_link_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "daw_json_link raw buffer read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "daw_json_link raw buffer read_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "daw_json_link raw buffer read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    std::cout << '\n';
 }
@@ -580,9 +564,7 @@ void nlohmann_test()
    
    auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "nlohmann write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "nlohmann write_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "nlohmann write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    // read performance
    
@@ -599,9 +581,7 @@ void nlohmann_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "nlohmann read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "nlohmann read_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "nlohmann read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    std::cout << '\n';
 }
@@ -654,9 +634,7 @@ void json_struct_test()
    
    auto mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "json_struct write_json size: " << buffer.size() << " bytes\n";
-   std::cout << "json_struct write_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "json_struct write_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    // read performance
    
@@ -673,9 +651,7 @@ void json_struct_test()
    
    mbytes_per_sec = iterations * buffer.size() / (runtime * 1048576);
    std::cout << "json_struct read_json size: " << buffer.size() << " bytes\n";
-   std::cout << "json_struct read_json: " << runtime << " s, " << mbytes_per_sec
-             << " MB/s"
-             << "\n";
+   std::cout << "json_struct read_json: " << runtime << " s, " << mbytes_per_sec << " MB/s\n";
    
    std::cout << '\n';
 }
@@ -690,9 +666,9 @@ void json_struct_test()
 int main()
 {
    glaze_test();
-   //daw_json_link_test();
-   //nlohmann_test();
-   //json_struct_test();
+   daw_json_link_test();
+   nlohmann_test();
+   json_struct_test();
    
    return 0;
 }
