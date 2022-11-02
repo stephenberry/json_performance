@@ -151,6 +151,7 @@ static constexpr size_t iterations = 100'000;
 struct results
 {
    std::string_view name{};
+   std::string_view url{};
    size_t iterations{};
    
    std::optional<size_t> json_byte_length{};
@@ -224,9 +225,24 @@ struct results
       
       std::cout << "\n---\n" << std::endl;
    }
+   
+   std::string json_stats() const {
+      static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** | **{}** | **{}** |)";
+      const std::string roundtrip = json_roundtrip ? fmt::format("{:.2f}", *json_roundtrip) : "N/A";
+      if (json_byte_length) {
+         const std::string write = json_write ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_write * 1048576))) : "N/A";
+         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_read * 1048576)))  : "N/A";
+         return fmt::format(s, name, url, roundtrip, write, read);
+      }
+      else {
+         const std::string write = json_write ? fmt::format("{:.2f}", *json_write)  : "N/A";
+         const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
+         return fmt::format(s, name, url, roundtrip, write, read);
+      }
+   }
 };
 
-void glaze_test()
+auto glaze_test()
 {
    std::string buffer{ json0 };
    
@@ -252,7 +268,7 @@ void glaze_test()
    
    auto t1 = std::chrono::steady_clock::now();
    
-   results r{ "glaze", iterations };
+   results r{ "Glaze", "https://github.com/stephenberry/glaze", iterations };
    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // write performance
@@ -326,6 +342,8 @@ void glaze_test()
    r.binary_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    r.print();
+   
+   return r;
 }
 
 #include <daw/json/daw_json_link.h>
@@ -403,7 +421,7 @@ struct daw::json::json_data_contract<obj_t> {
        }
 };
 
-void daw_json_link_test()
+auto daw_json_link_test()
 {
    std::string buffer{ json0 };
    
@@ -423,7 +441,7 @@ void daw_json_link_test()
    
    auto t1 = std::chrono::steady_clock::now();
    
-   results r{ "daw_json_link", iterations };
+   results r{ "daw_json_link", "https://github.com/beached/daw_json_link", iterations };
    
    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
@@ -464,6 +482,8 @@ void daw_json_link_test()
    }
    
    t1 = std::chrono::steady_clock::now();*/
+   
+   return r;
 }
 
 #include "nlohmann/json.hpp"
@@ -527,7 +547,7 @@ void from_json(const json& j, obj_t& v) {
    j.at("another_bool").get_to(v.another_bool);
 }
 
-void nlohmann_test()
+auto nlohmann_test()
 {
    std::string buffer{ json0 };
    
@@ -550,7 +570,7 @@ void nlohmann_test()
    
    auto t1 = std::chrono::steady_clock::now();
    
-   results r{ "nlohmann", iterations };
+   results r{ "nlohmann", "https://github.com/nlohmann/json", iterations };
    
    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
@@ -581,6 +601,8 @@ void nlohmann_test()
    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    r.print();
+   
+   return r;
 }
 
 #define JS_STL_ARRAY 1
@@ -592,7 +614,7 @@ JS_OBJ_EXT(nested_object_t, v3s, id);
 JS_OBJ_EXT(another_object_t, string, another_string, boolean, nested_object);
 JS_OBJ_EXT(obj_t, fixed_object, fixed_name_object, another_object, string_array, string, number, boolean, another_bool);
 
-void json_struct_test()
+auto json_struct_test()
 {
    std::string buffer{ json0 };
 
@@ -612,7 +634,7 @@ void json_struct_test()
    }
    auto t1 = std::chrono::steady_clock::now();
    
-   results r{ "json_struct", iterations };
+   results r{ "json_struct", "https://github.com/jorgen/json_struct", iterations };
 
    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
@@ -643,6 +665,8 @@ void json_struct_test()
    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    r.print();
+   
+   return r;
 }
 
 //#include "jsoncons/json.hpp"
@@ -651,22 +675,29 @@ void json_struct_test()
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"*/
 
-static constexpr std::string_view markdown_table = R"(
-| Library                                                      | Roundtrip Runtime (s) | Write (MB/s) | Read (MB/s) |
-| ------------------------------------------------------------ | --------------------- | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.87**              | **635**      | **645**     |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) (with unsafe raw buffer) | **2.59**              | **462**      | **461**     |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.18**              | **317**      | **460**     |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **8.31**              | **467**      | **173**     |
-| [**nlohmann json**](https://github.com/nlohmann/json)        | **18.58**             | **76**       | **66**      |
-)";
+static constexpr std::string_view table_header = R"(
+| Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
+| ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
 
 int main()
 {
-   //glaze_test();
-   //daw_json_link_test();
-   //nlohmann_test();
-   json_struct_test();
+   std::vector<results> results;
+   results.emplace_back(glaze_test());
+   results.emplace_back(daw_json_link_test());
+   results.emplace_back(json_struct_test());
+   results.emplace_back(nlohmann_test());
+   
+   std::ofstream table{ "json_stats.md" };
+   if (table) {
+      const auto n = results.size();
+      table << table_header << '\n';
+      for (size_t i = 0; i < n; ++i) {
+         table << results[i].json_stats();
+         if (i != n - 1) {
+            table << '\n';
+         }
+      }
+   }
    
    return 0;
 }
