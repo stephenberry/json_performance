@@ -256,7 +256,7 @@ struct results
    std::string json_stats() const {
       static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** | **{}** | **{}** |)";
       const std::string roundtrip = json_roundtrip ? fmt::format("{:.2f}", *json_roundtrip) : "N/A";
-      if (json_byte_length) {
+      /*if (json_byte_length) {
          const std::string write = json_write ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_write * 1048576))) : "N/A";
          const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_read * 1048576)))  : "N/A";
          return fmt::format(s, name, url, roundtrip, write, read);
@@ -265,7 +265,11 @@ struct results
          const std::string write = json_write ? fmt::format("{:.2f}", *json_write)  : "N/A";
          const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
          return fmt::format(s, name, url, roundtrip, write, read);
-      }
+      }*/
+      
+      const std::string write = json_write ? fmt::format("{:.2f}", *json_write)  : "N/A";
+      const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
+      return fmt::format(s, name, url, roundtrip, write, read);
    }
 };
 
@@ -925,7 +929,7 @@ auto simdjson_abc_test()
 #include "rapidjson/stringbuffer.h"*/
 
 static constexpr std::string_view table_header = R"(
-| Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
+| Library                                                      | Roundtrip Time (s) | Write (s) | Read (s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
 
 void test0()
