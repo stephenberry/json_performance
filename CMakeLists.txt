@@ -68,29 +68,16 @@ set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
  
 FetchContent_MakeAvailable(simdjson)
 
-add_library(${PROJECT_NAME} INTERFACE)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_include_directories(${PROJECT_NAME} INTERFACE include ${rapidjson_SOURCE_DIR}/include ${jsoncons_SOURCE_DIR}/include ${json_struct_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_DIR}/include)
 
-target_link_libraries(${PROJECT_NAME} INTERFACE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson)
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_20)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
-if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
-   # This flag allows visual studio projects to be organized into folders
-   # in the solution explorer.
-   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-   # create dummy target since some editors will not display interface targets
-   file(GLOB_RECURSE headers CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/glaze/include/glaze/*.hpp")
-   source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/include" PREFIX "headers" FILES ${headers})
-   file(GLOB_RECURSE sources CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-   source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}/src" PREFIX "sources" FILES ${sources})
-   add_executable(_${PROJECT_NAME} ${headers} ${sources})
-   target_link_libraries(_${PROJECT_NAME} PRIVATE ${PROJECT_NAME})
-   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-     target_compile_options(_${PROJECT_NAME} PRIVATE -Wall -Wextra)
-   elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-     target_compile_options(_${PROJECT_NAME} PRIVATE /W4)
-   endif()
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+  target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra)
+elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 endif()
