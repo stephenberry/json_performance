@@ -925,7 +925,7 @@ auto simdjson_abc_test()
 #include "rapidjson/stringbuffer.h"*/
 
 static constexpr std::string_view table_header = R"(
-| Library                                                      | Roundtrip Time (s) | Write (s) | Read (s) |
+| Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
 
 void test0()

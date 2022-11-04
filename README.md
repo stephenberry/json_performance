@@ -3,13 +3,13 @@ Performance profiling of JSON libraries
 
 Latest results (November 4, 2022):
 
-| Library                                                      | Roundtrip Time (s) | Write (s) | Read (s) |
-| ------------------------------------------------------------ | ------------------ | --------- | -------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.47**           | **987**   | **689**  |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**   | **1260** |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.21**           | **308**   | **464**  |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **4.52**           | **220**   | **321**  |
-| [**nlohmann**](https://github.com/nlohmann/json)             | **18.64**          | **77**    | **67**   |
+| Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
+| ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.47**           | **987**      | **689**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1260**    |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **3.21**           | **308**      | **464**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **4.52**           | **220**      | **321**     |
+| [**nlohmann**](https://github.com/nlohmann/json)             | **18.64**          | **77**       | **67**      |
 
 >  1,000,000 iterations on a single core (MacBook Pro M1)
 
@@ -56,10 +56,10 @@ This test demonstrates problems with `simdjson` and iterative parsers that canno
 
 Hash based solutions avoid this problem and do not suffer performance loss as the JSON document grows in size.
 
-| Library                                                      | Roundtrip Time (s) | Write (s) | Read (s) |
-| ------------------------------------------------------------ | ------------------ | --------- | -------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **3.77**           | **691**   | **412**  |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**   | **116**  |
+| Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
+| ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **3.77**           | **691**      | **412**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **116**     |
 
 # Registration Comparison
 
