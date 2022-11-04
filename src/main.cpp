@@ -256,7 +256,7 @@ struct results
    std::string json_stats() const {
       static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** | **{}** | **{}** |)";
       const std::string roundtrip = json_roundtrip ? fmt::format("{:.2f}", *json_roundtrip) : "N/A";
-      /*if (json_byte_length) {
+      if (json_byte_length) {
          const std::string write = json_write ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_write * 1048576))) : "N/A";
          const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_read * 1048576)))  : "N/A";
          return fmt::format(s, name, url, roundtrip, write, read);
@@ -265,11 +265,7 @@ struct results
          const std::string write = json_write ? fmt::format("{:.2f}", *json_write)  : "N/A";
          const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
          return fmt::format(s, name, url, roundtrip, write, read);
-      }*/
-      
-      const std::string write = json_write ? fmt::format("{:.2f}", *json_write)  : "N/A";
-      const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
-      return fmt::format(s, name, url, roundtrip, write, read);
+      }
    }
 };
 
@@ -712,7 +708,7 @@ auto json_struct_test()
         std::cout << "json_struct error: " << context.makeErrorString() << '\n';
      }
      buffer.clear();
-     buffer = JS::serializeStruct(obj);
+      buffer = JS::serializeStruct(obj, JS::SerializerOptions(JS::SerializerOptions::Compact));
    }
    auto t1 = std::chrono::steady_clock::now();
    
@@ -726,7 +722,7 @@ auto json_struct_test()
    
    for (size_t i = 0; i < iterations; ++i) {
       buffer.clear();
-      buffer = JS::serializeStruct(obj);
+      buffer = JS::serializeStruct(obj, JS::SerializerOptions(JS::SerializerOptions::Compact));
    }
    
    t1 = std::chrono::steady_clock::now();
