@@ -703,8 +703,8 @@ auto json_struct_test()
    for (size_t i = 0; i < iterations; ++i) {
      JS::ParseContext context(buffer);
      context.track_member_assignement_state = false;
-     context.parseTo(obj);
-     if (context.error != JS::Error::NoError) {
+     auto error = context.parseTo(obj);
+     if (error != JS::Error::NoError) {
         std::cout << "json_struct error: " << context.makeErrorString() << '\n';
      }
      buffer.clear();
@@ -735,7 +735,10 @@ auto json_struct_test()
    
    for (size_t i = 0; i < iterations; ++i) {
       JS::ParseContext context(buffer);
-      context.parseTo(obj);
+      auto error = context.parseTo(obj);
+     if (error != JS::Error::NoError) {
+        std::cout << "json_struct error: " << context.makeErrorString() << '\n';
+     }
    }
    
    t1 = std::chrono::steady_clock::now();
