@@ -13,7 +13,7 @@ Latest results (November 4, 2022):
 
 >  1,000,000 iterations on a single core (MacBook Pro M1)
 
-Test object:
+Test object (minified for test):
 
 ```json
 {
@@ -48,7 +48,7 @@ Test object:
 }
 ```
 
-## ABC Test
+## ABC Test (Out of Sequence Performance)
 
 In this test the JSON document has keys from "a" to "z", where each key refers to an array of integers from [0, 999]. The document orders the keys from "z" to "a", in reverse order to the expected "a" to "z" layout.
 
