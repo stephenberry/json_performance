@@ -922,10 +922,252 @@ auto simdjson_abc_test()
 }
 
 //#include "jsoncons/json.hpp"
-
-/*#include "rapidjson/document.h"
+#include "rapidjson/document.h"
 #include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"*/
+#include "rapidjson/stringbuffer.h"
+
+void rapid_json_read(const rapidjson::Value& json, fixed_object_t& obj)
+{
+   obj.int_array.clear();
+   for (auto& v : json["int_array"].GetArray()) {
+      obj.int_array.emplace_back(v.GetInt());
+   }
+
+   obj.float_array.clear();
+   for (auto& v : json["float_array"].GetArray()) {
+      obj.float_array.emplace_back(v.GetFloat());
+   }
+
+   obj.double_array.clear();
+   for (auto& v : json["double_array"].GetArray()) {
+      obj.double_array.emplace_back(v.GetDouble());
+   }
+}
+
+void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const fixed_object_t& obj)
+{
+   writer.StartObject();
+
+   writer.String("int_array");
+   writer.StartArray();
+   for (auto& v : obj.int_array) {
+      writer.Int(v);
+   }
+   writer.EndArray();
+
+   writer.String("float_array");
+   writer.StartArray();
+   for (auto& v : obj.float_array) {
+      writer.Double(v);
+   }
+   writer.EndArray();
+
+   writer.String("double_array");
+   writer.StartArray();
+   for (auto& v : obj.double_array) {
+      writer.Double(v);
+   }
+   writer.EndArray();
+
+   writer.EndObject();
+}
+
+void rapid_json_read(const rapidjson::Value& json, fixed_name_object_t& obj)
+{
+   obj.name0 = json["name0"].GetString();
+   obj.name1 = json["name1"].GetString();
+   obj.name2 = json["name2"].GetString();
+   obj.name3 = json["name3"].GetString();
+   obj.name4 = json["name4"].GetString();
+}
+
+void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const fixed_name_object_t& obj)
+{
+   writer.StartObject();
+
+   writer.String("name0");
+   writer.String(obj.name0.c_str());
+   writer.String("name1");
+   writer.String(obj.name1.c_str());
+   writer.String("name2");
+   writer.String(obj.name2.c_str());
+   writer.String("name3");
+   writer.String(obj.name3.c_str());
+   writer.String("name4");
+   writer.String(obj.name4.c_str());
+
+   writer.EndObject();
+}
+
+void rapid_json_read(const rapidjson::Value& json, nested_object_t& obj)
+{
+   obj.v3s.clear();
+   for (auto& v : json["v3s"].GetArray()) {
+      auto& v3 = obj.v3s.emplace_back();
+      auto i = 0;
+      for (auto& d : v.GetArray()) {
+         v3[i++] = d.GetDouble();
+      }
+   }
+   obj.id = json["id"].GetString();
+}
+
+void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const nested_object_t& obj)
+{
+   writer.StartObject();
+
+   writer.String("v3s");
+   writer.StartArray();
+   for (auto& v3 : obj.v3s) {
+      writer.StartArray();
+      for (auto& v : v3) {
+         writer.Double(v);
+      }
+      writer.EndArray();
+   }
+   writer.EndArray();
+
+   writer.String("id");
+   writer.String(obj.id.c_str());
+
+   writer.EndObject();
+}
+
+void rapid_json_read(const rapidjson::Value& json, another_object_t& obj)
+{
+   obj.string = json["string"].GetString();
+   obj.another_string = json["another_string"].GetString();
+   obj.boolean = json["boolean"].GetBool();
+   rapid_json_read(json["nested_object"], obj.nested_object);
+}
+
+void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const another_object_t& obj)
+{
+   writer.StartObject();
+
+   writer.String("string");
+   writer.String(obj.string.c_str());
+   writer.String("another_string");
+   writer.String(obj.another_string.c_str());
+   writer.String("boolean");
+   writer.Bool(obj.boolean);
+   writer.String("nested_object");
+   rapid_json_write(writer, obj.nested_object);
+
+   writer.EndObject();
+}
+
+void rapid_json_read(const rapidjson::Value& json, obj_t& obj)
+{
+   rapid_json_read(json["fixed_object"], obj.fixed_object);
+   rapid_json_read(json["fixed_name_object"], obj.fixed_name_object);
+   rapid_json_read(json["another_object"], obj.another_object);
+
+   obj.string_array.clear();
+   for (auto& v : json["string_array"].GetArray()) {
+      obj.string_array.emplace_back(v.GetString());
+   }
+
+   obj.string = json["string"].GetString();
+   obj.number = json["number"].GetDouble();
+   obj.boolean = json["boolean"].GetBool();
+   obj.another_bool = json["another_bool"].GetBool();
+}
+
+void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const obj_t& obj)
+{
+   writer.StartObject();
+
+   writer.String("fixed_object");
+   rapid_json_write(writer, obj.fixed_object);
+   writer.String("fixed_name_object");
+   rapid_json_write(writer, obj.fixed_name_object);
+   writer.String("another_object");
+   rapid_json_write(writer, obj.another_object);
+
+   writer.String("string_array");
+   writer.StartArray();
+   for (auto& v : obj.string_array) {
+      writer.String(v.c_str());
+   }
+   writer.EndArray();
+
+   writer.String("string");
+   writer.String(obj.string.c_str());
+   writer.String("number");
+   writer.Double(obj.number);
+   writer.String("boolean");
+   writer.Bool(obj.boolean);
+   writer.String("another_bool");
+   writer.Bool(obj.another_bool);
+
+   writer.EndObject();
+}
+
+auto rapidjson_read(obj_t& obj, const std::string& buffer){
+
+   rapidjson::Document doc;
+	doc.Parse(buffer.c_str());
+   rapid_json_read(doc, obj);
+}
+
+auto rapidjson_write(const obj_t& obj, std::string& buffer){
+	rapidjson::StringBuffer ss;
+	rapidjson::Writer<rapidjson::StringBuffer> writer(ss);
+   rapid_json_write(writer, obj);
+   buffer = ss.GetString();
+}
+
+auto rapidjson_test()
+{
+   std::string buffer{ json0 };
+   
+   obj_t obj;
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         rapidjson_read(obj, buffer);
+         rapidjson_write(obj, buffer);
+      }
+   } catch (const std::exception& e) {
+      std::cout << "rapidjson error: " << e.what() << '\n';
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   results r{ "RapidJSON", "https://github.com/Tencent/rapidjson", iterations };
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      rapidjson_write(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   // read performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      rapidjson_read(obj, buffer);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   r.print();
+   
+   return r;
+}
 
 static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
@@ -936,9 +1178,10 @@ void test0()
    std::vector<results> results;
    results.emplace_back(glaze_test());
    results.emplace_back(simdjson_test());
+   results.emplace_back(nlohmann_test());
    results.emplace_back(daw_json_link_test());
    results.emplace_back(json_struct_test());
-   results.emplace_back(nlohmann_test());
+   results.emplace_back(rapidjson_test());
    
    std::ofstream table{ "json_stats0.md" };
    if (table) {
