@@ -1178,10 +1178,10 @@ void test0()
    std::vector<results> results;
    results.emplace_back(glaze_test());
    results.emplace_back(simdjson_test());
-   results.emplace_back(nlohmann_test());
    results.emplace_back(daw_json_link_test());
-   results.emplace_back(json_struct_test());
    results.emplace_back(rapidjson_test());
+   results.emplace_back(json_struct_test());
+   results.emplace_back(nlohmann_test());
    
    std::ofstream table{ "json_stats0.md" };
    if (table) {
