@@ -948,21 +948,21 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
 {
    writer.StartObject();
 
-   writer.String("int_array");
+   writer.String("int_array", 9);
    writer.StartArray();
    for (auto& v : obj.int_array) {
       writer.Int(v);
    }
    writer.EndArray();
 
-   writer.String("float_array");
+   writer.String("float_array", 11);
    writer.StartArray();
    for (auto& v : obj.float_array) {
       writer.Double(v);
    }
    writer.EndArray();
 
-   writer.String("double_array");
+   writer.String("double_array", 12);
    writer.StartArray();
    for (auto& v : obj.double_array) {
       writer.Double(v);
@@ -985,16 +985,16 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
 {
    writer.StartObject();
 
-   writer.String("name0");
-   writer.String(obj.name0.c_str());
-   writer.String("name1");
-   writer.String(obj.name1.c_str());
-   writer.String("name2");
-   writer.String(obj.name2.c_str());
-   writer.String("name3");
-   writer.String(obj.name3.c_str());
-   writer.String("name4");
-   writer.String(obj.name4.c_str());
+   writer.String("name0", 5);
+   writer.String(obj.name0.c_str(), obj.name0.size());
+   writer.String("name1", 5);
+   writer.String(obj.name1.c_str(), obj.name1.size());
+   writer.String("name2", 5);
+   writer.String(obj.name2.c_str(), obj.name2.size());
+   writer.String("name3", 5);
+   writer.String(obj.name3.c_str(), obj.name3.size());
+   writer.String("name4", 5);
+   writer.String(obj.name4.c_str(), obj.name4.size());
 
    writer.EndObject();
 }
@@ -1016,7 +1016,7 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
 {
    writer.StartObject();
 
-   writer.String("v3s");
+   writer.String("v3s", 3);
    writer.StartArray();
    for (auto& v3 : obj.v3s) {
       writer.StartArray();
@@ -1027,8 +1027,8 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    }
    writer.EndArray();
 
-   writer.String("id");
-   writer.String(obj.id.c_str());
+   writer.String("id", 2);
+   writer.String(obj.id.c_str(), obj.id.size());
 
    writer.EndObject();
 }
@@ -1045,13 +1045,13 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
 {
    writer.StartObject();
 
-   writer.String("string");
-   writer.String(obj.string.c_str());
-   writer.String("another_string");
-   writer.String(obj.another_string.c_str());
-   writer.String("boolean");
+   writer.String("string", 6);
+   writer.String(obj.string.c_str(), obj.string.size());
+   writer.String("another_string", 14);
+   writer.String(obj.another_string.c_str(), obj.another_string.size());
+   writer.String("boolean", 7);
    writer.Bool(obj.boolean);
-   writer.String("nested_object");
+   writer.String("nested_object", 13);
    rapid_json_write(writer, obj.nested_object);
 
    writer.EndObject();
@@ -1078,36 +1078,36 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
 {
    writer.StartObject();
 
-   writer.String("fixed_object");
+   writer.String("fixed_object", 12);
    rapid_json_write(writer, obj.fixed_object);
-   writer.String("fixed_name_object");
+   writer.String("fixed_name_object", 17);
    rapid_json_write(writer, obj.fixed_name_object);
-   writer.String("another_object");
+   writer.String("another_object", 14);
    rapid_json_write(writer, obj.another_object);
 
-   writer.String("string_array");
+   writer.String("string_array", 12);
    writer.StartArray();
    for (auto& v : obj.string_array) {
-      writer.String(v.c_str());
+      writer.String(v.c_str(), v.size());
    }
    writer.EndArray();
 
-   writer.String("string");
-   writer.String(obj.string.c_str());
-   writer.String("number");
+   writer.String("string", 6);
+   writer.String(obj.string.c_str(), obj.string.size());
+   writer.String("number", 6);
    writer.Double(obj.number);
-   writer.String("boolean");
+   writer.String("boolean", 7);
    writer.Bool(obj.boolean);
-   writer.String("another_bool");
+   writer.String("another_bool", 12);
    writer.Bool(obj.another_bool);
 
    writer.EndObject();
 }
 
 auto rapidjson_read(obj_t& obj, const std::string& buffer){
-
+   std::string bufferCopy{buffer};
    rapidjson::Document doc;
-	doc.Parse(buffer.c_str());
+	doc.ParseInsitu(bufferCopy.data());
    rapid_json_read(doc, obj);
 }
 
