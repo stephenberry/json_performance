@@ -986,15 +986,15 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    writer.StartObject();
 
    writer.String("name0", 5);
-   writer.String(obj.name0.c_str(), obj.name0.size());
+   writer.String(obj.name0.c_str(), static_cast<unsigned>(obj.name0.size()));
    writer.String("name1", 5);
-   writer.String(obj.name1.c_str(), obj.name1.size());
+   writer.String(obj.name1.c_str(), static_cast<unsigned>(obj.name1.size()));
    writer.String("name2", 5);
-   writer.String(obj.name2.c_str(), obj.name2.size());
+   writer.String(obj.name2.c_str(), static_cast<unsigned>(obj.name2.size()));
    writer.String("name3", 5);
-   writer.String(obj.name3.c_str(), obj.name3.size());
+   writer.String(obj.name3.c_str(), static_cast<unsigned>(obj.name3.size()));
    writer.String("name4", 5);
-   writer.String(obj.name4.c_str(), obj.name4.size());
+   writer.String(obj.name4.c_str(), static_cast<unsigned>(obj.name4.size()));
 
    writer.EndObject();
 }
@@ -1028,7 +1028,7 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    writer.EndArray();
 
    writer.String("id", 2);
-   writer.String(obj.id.c_str(), obj.id.size());
+   writer.String(obj.id.c_str(), static_cast<unsigned>(obj.id.size()));
 
    writer.EndObject();
 }
@@ -1046,9 +1046,9 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    writer.StartObject();
 
    writer.String("string", 6);
-   writer.String(obj.string.c_str(), obj.string.size());
+   writer.String(obj.string.c_str(), static_cast<unsigned>(obj.string.size()));
    writer.String("another_string", 14);
-   writer.String(obj.another_string.c_str(), obj.another_string.size());
+   writer.String(obj.another_string.c_str(), static_cast<unsigned>(obj.another_string.size()));
    writer.String("boolean", 7);
    writer.Bool(obj.boolean);
    writer.String("nested_object", 13);
@@ -1088,12 +1088,12 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    writer.String("string_array", 12);
    writer.StartArray();
    for (auto& v : obj.string_array) {
-      writer.String(v.c_str(), v.size());
+      writer.String(v.c_str(), static_cast<unsigned>(v.size()));
    }
    writer.EndArray();
 
    writer.String("string", 6);
-   writer.String(obj.string.c_str(), obj.string.size());
+   writer.String(obj.string.c_str(), static_cast<unsigned>(obj.string.size()));
    writer.String("number", 6);
    writer.Double(obj.number);
    writer.String("boolean", 7);
