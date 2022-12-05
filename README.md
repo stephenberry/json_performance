@@ -1,16 +1,16 @@
 # json_performance
 Performance profiling of JSON libraries
 
-Latest results (November 16, 2022):
+Latest results (December 5, 2022):
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.44**           | **999**      | **701**     |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1257**    |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.77**           | **379**      | **484**     |
-| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.75**           | **306**      | **430**     |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **4.32**           | **232**      | **325**     |
-| [**nlohmann**](https://github.com/nlohmann/json)             | **16.93**          | **87**       | **71**      |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.55**           | **972**      | **637**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1249**    |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.86**           | **374**      | **469**     |
+| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.27**           | **303**      | **620**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **4.46**           | **230**      | **315**     |
+| [**nlohmann**](https://github.com/nlohmann/json)             | **17.32**          | **87**       | **71**      |
 
 >  1,000,000 iterations on a single core (MacBook Pro M1)
 
