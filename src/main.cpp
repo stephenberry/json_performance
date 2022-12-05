@@ -1104,10 +1104,10 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    writer.EndObject();
 }
 
-auto rapidjson_read(obj_t& obj, const std::string& buffer){
-   std::string bufferCopy{buffer};
+auto rapidjson_read(obj_t& obj, const std::string& buffer, std::string& mutable_buffer){
+   mutable_buffer = buffer;
    rapidjson::Document doc;
-	doc.ParseInsitu(bufferCopy.data());
+	doc.ParseInsitu(mutable_buffer.data());
    rapid_json_read(doc, obj);
 }
 
@@ -1126,9 +1126,11 @@ auto rapidjson_test()
    
    auto t0 = std::chrono::steady_clock::now();
    
+   std::string mutable_buffer{};
+   
    try {
       for (size_t i = 0; i < iterations; ++i) {
-         rapidjson_read(obj, buffer);
+         rapidjson_read(obj, buffer, mutable_buffer);
          rapidjson_write(obj, buffer);
       }
    } catch (const std::exception& e) {
@@ -1157,7 +1159,7 @@ auto rapidjson_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      rapidjson_read(obj, buffer);
+      rapidjson_read(obj, buffer, mutable_buffer);
    }
    
    t1 = std::chrono::steady_clock::now();
