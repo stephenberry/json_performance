@@ -59,8 +59,8 @@ Hash based solutions avoid this problem and do not suffer performance loss as th
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **3.40**           | **1334**     | **361**     |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **111**     |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **3.10**           | **1346**     | **404**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **113**     |
 
 # Registration Comparison
 
