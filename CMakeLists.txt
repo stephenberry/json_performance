@@ -68,11 +68,20 @@ set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
  
 FetchContent_MakeAvailable(simdjson)
 
+FetchContent_Declare(
+        fmt
+        SYSTEM TRUE
+        GIT_TAG 9.1.0
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+)
+
+FetchContent_MakeAvailable(fmt)
+
 add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_DIR}/include ${rapidjson_SOURCE_DIR}/include)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson fmt::fmt)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 

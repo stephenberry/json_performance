@@ -39,6 +39,8 @@ static constexpr std::string_view json0 = R"(
 #include <iostream>
 #include <unordered_map>
 
+#include "fmt/format.h"
+
 struct fixed_object_t
 {
    std::vector<int> int_array;
