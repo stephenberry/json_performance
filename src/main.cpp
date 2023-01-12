@@ -1173,6 +1173,197 @@ auto rapidjson_test()
    return r;
 }
 
+#include "yyjson.h"
+
+bool yyjson_read_json(obj_t& obj, std::string const& json)
+{
+   auto const doc = yyjson_read(json.c_str(), json.size(), 0);
+   auto const root = yyjson_doc_get_root(doc);
+
+   auto const fixed_object = yyjson_obj_get(root, "fixed_object");
+
+   size_t index, array_size;
+   yyjson_val* value;
+
+   auto const int_array = yyjson_obj_get(fixed_object, "int_array");
+   obj.fixed_object.int_array.clear();
+   yyjson_arr_foreach(int_array, index, array_size, value) {
+      obj.fixed_object.int_array.emplace_back(yyjson_get_int(value));
+   }
+
+   auto const float_array = yyjson_obj_get(fixed_object, "float_array");
+   obj.fixed_object.float_array.clear();
+   yyjson_arr_foreach(float_array, index, array_size, value) {
+      obj.fixed_object.float_array.emplace_back(yyjson_get_real(value));
+   }
+
+   auto const double_array = yyjson_obj_get(fixed_object, "double_array");
+   obj.fixed_object.double_array.clear();
+   yyjson_arr_foreach(double_array, index, array_size, value) {
+      obj.fixed_object.double_array.emplace_back(yyjson_get_real(value));
+   }
+
+   auto&& to_string_view = [] (yyjson_val* const val) noexcept {
+      return std::string_view(yyjson_get_str(val), yyjson_get_len(val));
+   };
+
+   auto fixed_name_object = yyjson_obj_get(root, "fixed_name_object");
+   obj.fixed_name_object.name0 = to_string_view(yyjson_obj_get(fixed_name_object, "name0"));
+   obj.fixed_name_object.name1 = to_string_view(yyjson_obj_get(fixed_name_object, "name1"));
+   obj.fixed_name_object.name2 = to_string_view(yyjson_obj_get(fixed_name_object, "name2"));
+   obj.fixed_name_object.name3 = to_string_view(yyjson_obj_get(fixed_name_object, "name3"));
+   obj.fixed_name_object.name4 = to_string_view(yyjson_obj_get(fixed_name_object, "name4"));
+
+   auto another_object = yyjson_obj_get(root, "another_object");
+   obj.another_object.string = to_string_view(yyjson_obj_get(another_object, "string"));
+   obj.another_object.another_string = to_string_view(yyjson_obj_get(another_object, "another_string"));
+   obj.another_object.boolean = yyjson_get_bool(yyjson_obj_get(another_object, "boolean"));
+
+   auto nested_object = yyjson_obj_get(another_object, "nested_object");
+   auto v3s = yyjson_obj_get(nested_object, "v3s");
+   obj.another_object.nested_object.v3s.clear();
+   yyjson_arr_foreach(v3s, index, array_size, value) {
+      size_t i = 0;
+      auto& back = obj.another_object.nested_object.v3s.emplace_back();
+
+      size_t index2, array_size2;
+      yyjson_val* value2;
+
+      yyjson_arr_foreach(value, index2, array_size2, value2) {
+         back[i++] = yyjson_get_real(value2);
+      }
+   }
+
+   obj.another_object.nested_object.id = to_string_view(yyjson_obj_get(nested_object, "id"));
+
+   auto string_array = yyjson_obj_get(root, "string_array");
+   obj.string_array.resize(yyjson_arr_size(string_array));
+   size_t i = 0;
+   yyjson_arr_foreach(string_array, index, array_size, value) {
+      obj.string_array[i++] = to_string_view(value);
+   }
+
+   obj.string = to_string_view(yyjson_obj_get(root, "string"));
+   obj.number = yyjson_get_real(yyjson_obj_get(root, "number"));
+   obj.boolean = yyjson_get_bool(yyjson_obj_get(root, "boolean"));
+   obj.another_bool = yyjson_get_bool(yyjson_obj_get(root, "another_bool"));
+
+   yyjson_doc_free(doc);
+
+   return false;
+}
+
+
+bool yyjson_write_json(obj_t const& obj, std::string& json) 
+{
+   auto doc = yyjson_mut_doc_new(nullptr);
+
+   auto root = yyjson_mut_obj(doc);
+   yyjson_mut_doc_set_root(doc, root);
+
+   auto fixed_object = yyjson_mut_obj(doc);
+   yyjson_mut_obj_add_val(doc, root, "fixed_object", fixed_object);
+   yyjson_mut_obj_add_val(doc, fixed_object, "int_array", yyjson_mut_arr_with_sint32(doc, obj.fixed_object.int_array.data(), obj.fixed_object.int_array.size()));
+   yyjson_mut_obj_add_val(doc, fixed_object, "float_array", yyjson_mut_arr_with_float(doc, obj.fixed_object.float_array.data(), obj.fixed_object.float_array.size()));
+   yyjson_mut_obj_add_val(doc, fixed_object, "double_array", yyjson_mut_arr_with_double(doc, obj.fixed_object.double_array.data(), obj.fixed_object.double_array.size()));
+
+   auto fixed_name_object = yyjson_mut_obj(doc);
+   yyjson_mut_obj_add_val(doc, root, "fixed_name_object", fixed_name_object);
+   yyjson_mut_obj_add_str(doc, fixed_name_object, "name0", obj.fixed_name_object.name0.c_str());
+   yyjson_mut_obj_add_str(doc, fixed_name_object, "name1", obj.fixed_name_object.name1.c_str());
+   yyjson_mut_obj_add_str(doc, fixed_name_object, "name2", obj.fixed_name_object.name2.c_str());
+   yyjson_mut_obj_add_str(doc, fixed_name_object, "name3", obj.fixed_name_object.name3.c_str());
+   yyjson_mut_obj_add_str(doc, fixed_name_object, "name4", obj.fixed_name_object.name4.c_str());
+
+   auto another_object = yyjson_mut_obj(doc);
+   yyjson_mut_obj_add_val(doc, root, "another_object", another_object);
+   yyjson_mut_obj_add_str(doc, another_object, "string", obj.another_object.string.c_str());
+   yyjson_mut_obj_add_str(doc, another_object, "another_string", obj.another_object.another_string.c_str());
+   yyjson_mut_obj_add_bool(doc, another_object, "boolean", obj.another_object.boolean);
+
+   auto nested_object = yyjson_mut_obj(doc);
+   yyjson_mut_obj_add_val(doc, another_object, "nested_object", nested_object);
+   auto v3s = yyjson_mut_arr(doc);
+   yyjson_mut_obj_add_val(doc, nested_object, "v3s", v3s);
+   for (auto const& v3 : obj.another_object.nested_object.v3s) {
+      yyjson_mut_arr_add_val(v3s, yyjson_mut_arr_with_double(doc, v3.data(), v3.size()));
+   }
+   yyjson_mut_obj_add_str(doc, nested_object, "id", obj.another_object.nested_object.id.c_str());
+
+   auto string_array = yyjson_mut_arr(doc);
+   yyjson_mut_obj_add_val(doc, root, "string_array", string_array);
+   for (auto const& str : obj.string_array) {
+      yyjson_mut_arr_add_str(doc, string_array, str.c_str());
+   }
+
+   yyjson_mut_obj_add_str(doc, root, "string", obj.string.c_str());
+   yyjson_mut_obj_add_real(doc, root, "number", obj.number);
+   yyjson_mut_obj_add_bool(doc, root, "boolean", obj.boolean);
+   yyjson_mut_obj_add_bool(doc, root, "another_bool", obj.another_bool);
+
+   auto tmp = yyjson_mut_write(doc, 0, nullptr);
+   json = tmp;
+
+   free(tmp);
+
+   yyjson_mut_doc_free(doc);
+
+   return false;
+}
+
+auto yyjson_test()
+{
+   std::string buffer{ json0 };
+
+   obj_t obj;
+
+   auto t0 = std::chrono::steady_clock::now();
+
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         yyjson_read_json(obj, buffer);
+         buffer.clear();
+         yyjson_write_json(obj, buffer);
+      }
+   } catch (const std::exception& e) {
+      std::cout << "daw_json_link error: " << e.what() << '\n';
+   }
+
+   auto t1 = std::chrono::steady_clock::now();
+
+   results r{ "yyjson", "https://github.com/ibireme/yyjson", iterations };
+
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+
+   for (size_t i = 0; i < iterations; ++i) {
+      yyjson_write_json(obj, buffer);
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // read performance
+
+   t0 = std::chrono::steady_clock::now();
+
+   for (size_t i = 0; i < iterations; ++i) {
+      yyjson_read_json(obj, buffer);
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   r.print();
+
+   return r;
+}
+
 static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
@@ -1186,6 +1377,7 @@ void test0()
    results.emplace_back(rapidjson_test());
    results.emplace_back(json_struct_test());
    results.emplace_back(nlohmann_test());
+   results.emplace_back(yyjson_test());
    
    std::ofstream table{ "json_stats0.md" };
    if (table) {
