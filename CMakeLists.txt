@@ -10,6 +10,8 @@ if(NOT ${CPM_LOCAL_PACKAGE_PATHS} STREQUAL "")
    include(${CPM_LOCAL_PACKAGE_PATHS})
 endif()
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 include(cmake/CPM.cmake)
 
 include(FetchContent)
@@ -60,13 +62,22 @@ FetchContent_MakeAvailable(json_struct)
 FetchContent_Declare(
   simdjson
   GIT_REPOSITORY https://github.com/simdjson/simdjson.git
-  GIT_TAG  v3.0.0
+  GIT_TAG  v3.0.1
   GIT_SHALLOW TRUE)
 
 set(SIMDJSON_JUST_LIBRARY ON CACHE INTERNAL "")
 set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
  
 FetchContent_MakeAvailable(simdjson)
+
+FetchContent_Declare(
+        yyjson
+        SYSTEM TRUE
+        GIT_TAG 0.6.0
+        GIT_REPOSITORY https://github.com/ibireme/yyjson.git
+)
+
+FetchContent_MakeAvailable(yyjson)
 
 FetchContent_Declare(
         fmt
@@ -81,7 +92,7 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_DIR}/include ${rapidjson_SOURCE_DIR}/include)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt)
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 
@@ -90,3 +101,4 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
   target_compile_options(${PROJECT_NAME} PRIVATE /W4)
 endif()
+
