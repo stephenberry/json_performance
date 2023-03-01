@@ -1,17 +1,17 @@
 # json_performance
 Performance profiling of JSON libraries
 
-Latest results (January 23, 2023):
+Latest results (March 1, 2023):
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.30**           | **927**      | **939**     |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1301**    |
-| [**yyjson**](https://github.com/ibireme/yyjson)              | **1.69**           | **651**      | **1048**    |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.70**           | **396**      | **503**     |
-| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.16**           | **310**      | **648**     |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **4.23**           | **241**      | **331**     |
-| [**nlohmann**](https://github.com/nlohmann/json)             | **16.73**          | **89**       | **73**      |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.30**           | **907**      | **941**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1257**    |
+| [**yyjson**](https://github.com/ibireme/yyjson)              | **1.73**           | **633**      | **1021**    |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.79**           | **382**      | **487**     |
+| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.21**           | **311**      | **630**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **4.29**           | **236**      | **329**     |
+| [**nlohmann**](https://github.com/nlohmann/json)             | **17.08**          | **89**       | **72**      |
 
 >  1,000,000 iterations on a single core (MacBook Pro M1)
 
@@ -60,7 +60,7 @@ Hash based solutions avoid this problem and do not suffer performance loss as th
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.44**           | **1338**     | **561**     |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **2.44**           | **1334**     | **564**     |
 | [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **114**     |
 
 # Registration Comparison

@@ -281,7 +281,10 @@ auto glaze_test()
    
    try {
       for (size_t i = 0; i < iterations; ++i) {
-         glz::read_json(obj, buffer);
+         if (glz::read_json(obj, buffer)) {
+            std::cout << "glaze error!\n";
+            break;
+         }
          glz::write_json(obj, buffer);
       }
       
@@ -317,7 +320,10 @@ auto glaze_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      glz::read_json(obj, buffer);
+      if (glz::read_json(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -386,7 +392,10 @@ auto glaze_abc_test()
    try {
       for (size_t i = 0; i < iterations_abc; ++i) {
          glz::write_json(obj, buffer);
-         glz::read_json(obj, buffer);
+         if (glz::read_json(obj, buffer)) {
+            std::cout << "glaze error!\n";
+            break;
+         }
       }
    } catch (const std::exception& e) {
       std::cout << "glaze error: " << e.what() << '\n';
@@ -414,7 +423,10 @@ auto glaze_abc_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations_abc; ++i) {
-      glz::read_json(obj, buffer);
+      if (glz::read_json(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    t1 = std::chrono::steady_clock::now();
