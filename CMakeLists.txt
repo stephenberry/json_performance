@@ -62,12 +62,12 @@ FetchContent_MakeAvailable(json_struct)
 FetchContent_Declare(
   simdjson
   GIT_REPOSITORY https://github.com/simdjson/simdjson.git
-  GIT_TAG  v3.0.1
+  GIT_TAG  v3.1.3
   GIT_SHALLOW TRUE)
 
 set(SIMDJSON_JUST_LIBRARY ON CACHE INTERNAL "")
 set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
- 
+
 FetchContent_MakeAvailable(simdjson)
 
 FetchContent_Declare(
