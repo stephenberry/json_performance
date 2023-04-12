@@ -12,23 +12,24 @@ endif()
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include(cmake/CPM.cmake)
-
 include(FetchContent)
 
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
-CPMAddPackage(
-   NAME glaze
-   GIT_REPOSITORY https://github.com/stephenberry/glaze
-   GIT_TAG main
+FetchContent_Declare(
+  glaze
+  GIT_REPOSITORY https://github.com/stephenberry/glaze.git
+  GIT_TAG main
+  GIT_SHALLOW TRUE
 )
+FetchContent_MakeAvailable(glaze)
 
 FetchContent_Declare(
         rapidjson
         GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
         GIT_TAG        master
+	GIT_SHALLOW TRUE
 )
 FetchContent_GetProperties(rapidjson)
 if(NOT rapidjson_POPULATED)
@@ -39,6 +40,7 @@ FetchContent_Declare(
         jsoncons
         GIT_REPOSITORY https://github.com/danielaparker/jsoncons
         GIT_TAG        master
+	GIT_SHALLOW TRUE
 )
 FetchContent_GetProperties(jsoncons)
 if(NOT jsoncons_POPULATED)
@@ -49,6 +51,7 @@ FetchContent_Declare(
   daw_json_link
   GIT_REPOSITORY https://github.com/beached/daw_json_link
   GIT_TAG release
+GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(daw_json_link)
 
@@ -56,6 +59,7 @@ FetchContent_Declare(
   json_struct
   GIT_REPOSITORY https://github.com/jorgen/json_struct
   GIT_TAG master
+GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(json_struct)
 
@@ -75,6 +79,7 @@ FetchContent_Declare(
         SYSTEM TRUE
         GIT_TAG 0.6.0
         GIT_REPOSITORY https://github.com/ibireme/yyjson.git
+	GIT_SHALLOW TRUE
 )
 
 FetchContent_MakeAvailable(yyjson)
@@ -84,6 +89,7 @@ FetchContent_Declare(
         SYSTEM TRUE
         GIT_TAG 9.1.0
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+	GIT_SHALLOW TRUE
 )
 
 FetchContent_MakeAvailable(fmt)

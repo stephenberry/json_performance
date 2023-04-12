@@ -320,7 +320,7 @@ auto glaze_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      if (glz::read_json(obj, buffer)) {
+      if (glz::read<glz::opts{.allow_hash_check = true}>(obj, buffer)) {
          std::cout << "glaze error!\n";
          break;
       }
@@ -353,7 +353,10 @@ auto glaze_test()
    
    try {
       for (size_t i = 0; i < iterations; ++i) {
-         glz::read_binary(obj, buffer);
+         if (glz::read_binary(obj, buffer)) {
+            std::cout << "glaze error!\n";
+            break;
+         }
       }
    } catch (const std::exception& e) {
       std::cout << "glaze binary error: " << e.what() << '\n';
@@ -368,7 +371,10 @@ auto glaze_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      glz::read_binary(obj, buffer);
+      if (glz::read_binary(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
       glz::write_binary(obj, buffer);
    }
    
