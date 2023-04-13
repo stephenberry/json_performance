@@ -14,22 +14,25 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(FetchContent)
 
+Set(FETCHCONTENT_QUIET FALSE)
+
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
 FetchContent_Declare(
   glaze
   GIT_REPOSITORY https://github.com/stephenberry/glaze.git
-  GIT_TAG main
+  GIT_TAG dev
   GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(glaze)
 
+#FetchContent_Declare(glaze URL https://github.com/stephenberry/glaze/archive/refs/tags/v1.1.2.tar.gz)
+#FetchContent_MakeAvailable(glaze)
+
 FetchContent_Declare(
         rapidjson
-        GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-        GIT_TAG        master
-	GIT_SHALLOW TRUE
+        URL https://github.com/Tencent/rapidjson/archive/refs/tags/v1.1.0.tar.gz
 )
 FetchContent_GetProperties(rapidjson)
 if(NOT rapidjson_POPULATED)
@@ -38,9 +41,7 @@ endif()
 
 FetchContent_Declare(
         jsoncons
-        GIT_REPOSITORY https://github.com/danielaparker/jsoncons
-        GIT_TAG        master
-	GIT_SHALLOW TRUE
+        URL https://github.com/danielaparker/jsoncons/archive/refs/tags/v0.170.0.tar.gz
 )
 FetchContent_GetProperties(jsoncons)
 if(NOT jsoncons_POPULATED)
@@ -49,9 +50,7 @@ endif()
 
 FetchContent_Declare(
   daw_json_link
-  GIT_REPOSITORY https://github.com/beached/daw_json_link
-  GIT_TAG release
-GIT_SHALLOW TRUE
+  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.15.0.tar.gz
 )
 FetchContent_MakeAvailable(daw_json_link)
 
@@ -65,9 +64,7 @@ FetchContent_MakeAvailable(json_struct)
 
 FetchContent_Declare(
   simdjson
-  GIT_REPOSITORY https://github.com/simdjson/simdjson.git
-  GIT_TAG  v3.1.3
-  GIT_SHALLOW TRUE)
+  URL https://github.com/simdjson/simdjson/archive/refs/tags/v3.1.7.tar.gz)
 
 set(SIMDJSON_JUST_LIBRARY ON CACHE INTERNAL "")
 set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
@@ -77,9 +74,7 @@ FetchContent_MakeAvailable(simdjson)
 FetchContent_Declare(
         yyjson
         SYSTEM TRUE
-        GIT_TAG 0.6.0
-        GIT_REPOSITORY https://github.com/ibireme/yyjson.git
-	GIT_SHALLOW TRUE
+        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.6.0.tar.gz
 )
 
 FetchContent_MakeAvailable(yyjson)
