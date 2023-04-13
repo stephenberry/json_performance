@@ -320,7 +320,7 @@ auto glaze_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      if (glz::read<glz::opts{.allow_hash_check = true}>(obj, buffer)) {
+      if (glz::read_json(obj, buffer)) {
          std::cout << "glaze error!\n";
          break;
       }
