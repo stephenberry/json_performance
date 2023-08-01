@@ -93,7 +93,14 @@ add_executable(${PROJECT_NAME} src/main.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_DIR}/include ${rapidjson_SOURCE_DIR}/include)
 
+find_package(Qt5 COMPONENTS Core)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt)
+
+if (Qt5_FOUND)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_QT=1)
+  target_link_libraries(${PROJECT_NAME} PRIVATE Qt5::Core)
+endif()
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 

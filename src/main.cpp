@@ -1382,6 +1382,189 @@ auto yyjson_test()
    return r;
 }
 
+#ifdef HAVE_QT
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+
+void qtjson_read(obj_t& obj, const QByteArray& buffer)
+{
+    QJsonDocument doc = QJsonDocument::fromJson(buffer);
+    auto jsonObj = doc.object();
+
+    auto fixed_object = jsonObj["fixed_object"].toObject();
+    auto fixed_object_int_array = fixed_object["int_array"].toArray();
+    auto fixed_object_float_array = fixed_object["float_array"].toArray();
+    auto fixed_object_double_array = fixed_object["double_array"].toArray();
+    obj.fixed_object.int_array.clear();
+    for (const auto& v : fixed_object_int_array) {
+        obj.fixed_object.int_array.push_back(v.toInt());
+    }
+    obj.fixed_object.float_array.clear();
+    for (const auto& v : fixed_object_float_array) {
+        obj.fixed_object.float_array.push_back(v.toDouble());
+    }
+    obj.fixed_object.double_array.clear();
+    for (const auto& v : fixed_object_double_array) {
+        obj.fixed_object.double_array.push_back(v.toDouble());
+    }
+
+    auto fixed_name_object = jsonObj["fixed_name_object"].toObject();
+    obj.fixed_name_object.name0 = fixed_name_object["name0"].toString().toStdString();
+    obj.fixed_name_object.name1 = fixed_name_object["name1"].toString().toStdString();
+    obj.fixed_name_object.name2 = fixed_name_object["name2"].toString().toStdString();
+    obj.fixed_name_object.name3 = fixed_name_object["name3"].toString().toStdString();
+    obj.fixed_name_object.name4 = fixed_name_object["name4"].toString().toStdString();
+
+    auto another_object = jsonObj["another_object"].toObject();
+    obj.another_object.string = another_object["string"].toString().toStdString();
+    obj.another_object.another_string = another_object["another_string"].toString().toStdString();
+    obj.another_object.boolean = another_object["boolean"].toBool();
+    auto another_object_nested_object = another_object["nested_object"].toObject();
+    obj.another_object.nested_object.id = another_object_nested_object["id"].toString().toStdString();
+    auto another_object_v3s = another_object_nested_object["v3s"].toArray();
+    obj.another_object.nested_object.v3s.clear();
+    for (const auto& v : another_object_v3s) {
+        const auto a = v.toArray();
+        auto& back = obj.another_object.nested_object.v3s.emplace_back();
+        for (size_t i = 0; i < back.size(); ++i) {
+            back[i] = a[i].toDouble();
+        }
+    }
+
+    obj.string_array.clear();
+    auto string_array = jsonObj["string_array"].toArray();
+    for (const auto& v : string_array) {
+        obj.string_array.push_back(v.toString().toStdString());
+    }
+
+    obj.string = jsonObj["string"].toString().toStdString();
+    obj.number = jsonObj["number"].toInt();
+    obj.boolean = jsonObj["boolean"].toBool();
+    obj.another_bool = jsonObj["another_bool"].toBool();
+}
+
+void qtjson_write(const obj_t& obj, QByteArray& buffer)
+{
+    QJsonObject root;
+
+    root["fixed_object"] = [&obj] {
+        QJsonObject fixed_object;
+        QJsonArray int_array;
+        for (auto v : obj.fixed_object.int_array) {
+            int_array.append(v);
+        }
+        QJsonArray float_array;
+        for (auto v : obj.fixed_object.float_array) {
+            float_array.append(v);
+        }
+
+        QJsonArray double_array;
+        for (auto v : obj.fixed_object.double_array) {
+            double_array.append(v);
+        }
+
+        fixed_object["int_array"] = int_array;
+        fixed_object["float_array"] = float_array;
+        fixed_object["double_array"] = double_array;
+        return fixed_object;
+    }();
+
+    root["fixed_name_object"] = [&obj] {
+        QJsonObject fixed_name_object;
+        fixed_name_object["name0"] = QString::fromStdString(obj.fixed_name_object.name0);
+        fixed_name_object["name1"] = QString::fromStdString(obj.fixed_name_object.name1);
+        fixed_name_object["name2"] = QString::fromStdString(obj.fixed_name_object.name2);
+        fixed_name_object["name3"] = QString::fromStdString(obj.fixed_name_object.name3);
+        fixed_name_object["name4"] = QString::fromStdString(obj.fixed_name_object.name4);
+        return fixed_name_object;
+    }();
+
+    root["another_object"] = [&obj] {
+        QJsonObject another_object;
+        another_object["string"] = QString::fromStdString(obj.another_object.string);
+        another_object["another_string"] = QString::fromStdString(obj.another_object.another_string);
+        another_object["boolean"] = obj.another_object.boolean;
+
+        QJsonObject nested_object;
+        nested_object["id"] = QString::fromStdString(obj.another_object.nested_object.id);
+        QJsonArray v3s;
+        for (const auto& arr : obj.another_object.nested_object.v3s) {
+            QJsonArray subArray;
+            for (auto v : arr) {
+                subArray.append(v);
+            }
+            v3s.append(subArray);
+        }
+        nested_object["v3s"] = v3s;
+        another_object["nested_object"] = nested_object;
+
+        return another_object;
+    }();
+
+    QJsonArray string_array;
+    for (const auto& s : obj.string_array) {
+        string_array.append(QString::fromStdString(s));
+    }
+    root["string_array"] = string_array;
+
+    root["string"] = QString::fromStdString(obj.string);
+    root["number"] = obj.number;
+    root["boolean"] = obj.boolean;
+    root["another_bool"] = obj.another_bool;
+
+    buffer = QJsonDocument(root).toJson(QJsonDocument::Compact);
+}
+
+results qtjson_test()
+{
+    QByteArray buffer { json0.data(), json0.size() };
+
+    obj_t obj;
+
+    auto t0 = std::chrono::steady_clock::now();
+
+    for (size_t i = 0; i < iterations; ++i) {
+        qtjson_read(obj, buffer);
+        qtjson_write(obj, buffer);
+    }
+
+    auto t1 = std::chrono::steady_clock::now();
+
+    results r { "qtjson", "https://www.qt.io/", iterations };
+
+    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+    // write performance
+    t0 = std::chrono::steady_clock::now();
+
+    for (size_t i = 0; i < iterations; ++i) {
+        qtjson_write(obj, buffer);
+    }
+
+    t1 = std::chrono::steady_clock::now();
+
+    r.json_byte_length = buffer.size();
+    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+    // read performance
+
+    t0 = std::chrono::steady_clock::now();
+
+    for (size_t i = 0; i < iterations; ++i) {
+        qtjson_read(obj, buffer);
+    }
+
+    t1 = std::chrono::steady_clock::now();
+
+    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+    r.print();
+
+    return r;
+}
+#endif
+
 static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
@@ -1396,6 +1579,9 @@ void test0()
    results.emplace_back(rapidjson_test());
    results.emplace_back(json_struct_test());
    results.emplace_back(nlohmann_test());
+#ifdef HAVE_QT
+   results.emplace_back(qtjson_test());
+#endif
    
    std::ofstream table{ "json_stats0.md" };
    if (table) {
