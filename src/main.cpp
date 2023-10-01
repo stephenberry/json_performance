@@ -1,4 +1,3 @@
-
 #include "glaze/glaze.hpp"
 #include "glaze/core/macros.hpp"
 
@@ -40,6 +39,7 @@ static constexpr std::string_view json0 = R"(
 #include <unordered_map>
 
 #include "fmt/format.h"
+#include "boost/describe/class.hpp"
 
 struct fixed_object_t
 {
@@ -47,6 +47,8 @@ struct fixed_object_t
    std::vector<float> float_array;
    std::vector<double> double_array;
 };
+
+BOOST_DESCRIBE_STRUCT(fixed_object_t, (), (int_array, float_array, double_array))
 
 struct fixed_name_object_t
 {
@@ -57,11 +59,15 @@ struct fixed_name_object_t
    std::string name4{};
 };
 
+BOOST_DESCRIBE_STRUCT(fixed_name_object_t, (), (name0, name1, name2, name3, name4))
+
 struct nested_object_t
 {
    std::vector<std::array<double, 3>> v3s{};
    std::string id{};
 };
+
+BOOST_DESCRIBE_STRUCT(nested_object_t, (), (v3s, id))
 
 struct another_object_t
 {
@@ -70,6 +76,8 @@ struct another_object_t
    bool boolean{};
    nested_object_t nested_object{};
 };
+
+BOOST_DESCRIBE_STRUCT(another_object_t, (), (string, another_string, boolean, nested_object))
 
 struct obj_t
 {
@@ -82,6 +90,8 @@ struct obj_t
    bool boolean{};
    bool another_bool{};
 };
+
+BOOST_DESCRIBE_STRUCT(obj_t, (), (fixed_object, fixed_name_object, another_object, string_array, string, number, boolean, another_bool))
 
 template <>
 struct glz::meta<fixed_object_t> {
@@ -1565,6 +1575,77 @@ results qtjson_test()
 }
 #endif
 
+#include <boost/json.hpp>
+
+auto boost_json_test()
+{
+   std::string buffer{ json0 };
+
+   obj_t obj;
+
+   auto t0 = std::chrono::steady_clock::now();
+
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         unsigned char buf[ 4096 ];
+         boost::json::monotonic_resource mr( buf );
+
+         auto jv = boost::json::parse( buffer, &mr );
+         obj = boost::json::value_to<obj_t>( jv );
+
+         auto jv2 = boost::json::value_from( obj, &mr );
+         buffer = boost::json::serialize( jv2 );
+      }
+   } catch (const std::exception& e) {
+      std::cout << "Boost.JSON error: " << e.what() << '\n';
+   }
+
+   auto t1 = std::chrono::steady_clock::now();
+
+   results r{ "Boost.JSON", "https://boost.org/libs/json", iterations };
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+
+   for (size_t i = 0; i < iterations; ++i) {
+      unsigned char buf[ 4096 ];
+      boost::json::monotonic_resource mr( buf );
+
+      auto jv2 = boost::json::value_from( obj, &mr );
+      buffer = boost::json::serialize( jv2 );
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // read performance
+
+   t0 = std::chrono::steady_clock::now();
+
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         unsigned char buf[ 4096 ];
+         boost::json::monotonic_resource mr( buf );
+
+         auto jv = boost::json::parse( buffer, &mr );
+         obj = boost::json::value_to<obj_t>( jv );
+      }
+   } catch (const std::exception& e) {
+      std::cout << "Boost.JSON error: " << e.what() << '\n';
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   r.print();
+
+   return r;
+}
+
 static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
@@ -1579,6 +1660,7 @@ void test0()
    results.emplace_back(rapidjson_test());
    results.emplace_back(json_struct_test());
    results.emplace_back(nlohmann_test());
+   results.emplace_back(boost_json_test());
 #ifdef HAVE_QT
    results.emplace_back(qtjson_test());
 #endif
