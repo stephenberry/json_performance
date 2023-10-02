@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.16...3.25)
 
 project(
   json_performance
@@ -84,10 +84,19 @@ FetchContent_Declare(
         SYSTEM TRUE
         GIT_TAG 9.1.0
         GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-	GIT_SHALLOW TRUE
+        GIT_SHALLOW TRUE
 )
 
 FetchContent_MakeAvailable(fmt)
+
+FetchContent_Declare(
+        boost
+        URL https://github.com/boostorg/boost/releases/download/boost-1.83.0/boost-1.83.0.tar.xz
+)
+
+set(BOOST_INCLUDE_LIBRARIES json)
+
+FetchContent_MakeAvailable(boost)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
@@ -95,7 +104,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_
 
 find_package(Qt5 COMPONENTS Core)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt Boost::json)
 
 if (Qt5_FOUND)
   target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_QT=1)
