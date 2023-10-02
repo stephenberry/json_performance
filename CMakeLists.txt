@@ -50,7 +50,7 @@ endif()
 
 FetchContent_Declare(
   daw_json_link
-  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.15.0.tar.gz
+  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.20.1.tar.gz
 )
 FetchContent_MakeAvailable(daw_json_link)
 
@@ -64,7 +64,7 @@ FetchContent_MakeAvailable(json_struct)
 
 FetchContent_Declare(
   simdjson
-  URL https://github.com/simdjson/simdjson/archive/refs/tags/v3.1.7.tar.gz)
+  URL https://github.com/simdjson/simdjson/archive/refs/tags/v3.3.0.tar.gz)
 
 set(SIMDJSON_JUST_LIBRARY ON CACHE INTERNAL "")
 set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
@@ -74,7 +74,7 @@ FetchContent_MakeAvailable(simdjson)
 FetchContent_Declare(
         yyjson
         SYSTEM TRUE
-        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.6.0.tar.gz
+        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.8.0.tar.gz
 )
 
 FetchContent_MakeAvailable(yyjson)
