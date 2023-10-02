@@ -187,6 +187,10 @@ static constexpr size_t iterations = 100'000;
 static constexpr size_t iterations_abc = 1'000;
 #endif
 
+// We scale all speeds by the minified JSON byte length, so that libraries which do not efficiently write JSON do not get an unfair advantage
+// We want to know how fast the libraries will serialize/deserialize with repsect to one another
+size_t minified_byte_length{};
+
 struct results
 {
    std::string_view name{};
@@ -203,7 +207,7 @@ struct results
    std::optional<double> binary_read{};
    std::optional<double> binary_roundtrip{};
    
-   void print()
+   void print(bool use_minified = true)
    {
       if (json_roundtrip) {
          std::cout << name << " json roundtrip: " << *json_roundtrip << " s\n";
@@ -215,7 +219,8 @@ struct results
       
       if (json_write) {
          if (json_byte_length) {
-            const auto MBs = iterations * *json_byte_length / (*json_write * 1048576);
+            const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
+            const auto MBs = iterations * byte_length / (*json_write * 1048576);
             std::cout << name << " json write: " << *json_write << " s, " << MBs << " MB/s\n";
          }
          else {
@@ -225,7 +230,8 @@ struct results
       
       if (json_read) {
          if (json_byte_length) {
-            const auto MBs = iterations * *json_byte_length / (*json_read * 1048576);
+            const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
+            const auto MBs = iterations * byte_length / (*json_read * 1048576);
             std::cout << name << " json read: " << *json_read << " s, " << MBs << " MB/s\n";
          }
          else {
@@ -265,12 +271,13 @@ struct results
       std::cout << "\n---\n" << std::endl;
    }
    
-   std::string json_stats() const {
+   std::string json_stats(bool use_minified = true) const {
       static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** | **{}** | **{}** |)";
       const std::string roundtrip = json_roundtrip ? fmt::format("{:.2f}", *json_roundtrip) : "N/A";
       if (json_byte_length) {
-         const std::string write = json_write ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_write * 1048576))) : "N/A";
-         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * *json_byte_length / (*json_read * 1048576)))  : "N/A";
+         const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
+         const std::string write = json_write ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_write * 1048576))) : "N/A";
+         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
          return fmt::format(s, name, url, roundtrip, write, read);
       }
       else {
@@ -323,6 +330,7 @@ auto glaze_test()
    t1 = std::chrono::steady_clock::now();
    
    r.json_byte_length = buffer.size();
+   minified_byte_length = *r.json_byte_length;
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // read performance
@@ -449,7 +457,7 @@ auto glaze_abc_test()
    
    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   r.print();
+   r.print(false);
    
    return r;
 }
@@ -946,7 +954,7 @@ auto simdjson_abc_test()
    r.json_byte_length = padded.size();
    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   r.print();
+   r.print(false);
    
    return r;
 }
@@ -1658,8 +1666,8 @@ void test0()
    results.emplace_back(yyjson_test());
    results.emplace_back(daw_json_link_test());
    results.emplace_back(rapidjson_test());
-   results.emplace_back(boost_json_test());
    results.emplace_back(json_struct_test());
+   results.emplace_back(boost_json_test());
    results.emplace_back(nlohmann_test());
 #ifdef HAVE_QT
    results.emplace_back(qtjson_test());
@@ -1689,7 +1697,7 @@ void abc_test()
       const auto n = results.size();
       table << table_header << '\n';
       for (size_t i = 0; i < n; ++i) {
-         table << results[i].json_stats();
+         table << results[i].json_stats(false);
          if (i != n - 1) {
             table << '\n';
          }
