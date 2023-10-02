@@ -1659,8 +1659,8 @@ void test0()
    results.emplace_back(daw_json_link_test());
    results.emplace_back(rapidjson_test());
    results.emplace_back(json_struct_test());
-   results.emplace_back(nlohmann_test());
    results.emplace_back(boost_json_test());
+   results.emplace_back(nlohmann_test());
 #ifdef HAVE_QT
    results.emplace_back(qtjson_test());
 #endif
