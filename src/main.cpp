@@ -622,7 +622,7 @@ auto daw_json_link_abc_test()
    
    abc_t<false> obj{};
    
-   results r{ "daw_json_link", "https://github.com/beached/daw_json_link", iterations };
+   results r{ "daw_json_link", "https://github.com/beached/daw_json_link", iterations_abc };
    
    // read performance
    
