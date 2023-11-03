@@ -843,9 +843,8 @@ bool on_demand::read_in_order(obj_t& obj, const padded_string &json) {
    obj.another_object.nested_object.id = std::string_view(nested_object["id"]);
    
    ondemand::array string_array = doc["string_array"];
-   obj.string_array.resize(string_array.count_elements());
-   size_t index = 0;
-   for (std::string_view x : string_array) { obj.string_array[index++] = x; }
+   obj.string_array.clear();
+   for (std::string_view x : string_array) { obj.string_array.emplace_back(x); }
    
    obj.string = std::string_view(doc["string"]);
    obj.number = double(doc["number"]);
