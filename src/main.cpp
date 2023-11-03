@@ -155,11 +155,13 @@ struct glz::meta<obj_t> {
          string_array, string, number, boolean, another_bool);*/
 
 // for testing large, flat documents and out of sequence reading
+template <bool backward>
 struct abc_t
 {
    std::vector<int64_t> a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z;
+   bool initialized = init();
    
-   abc_t() {
+   bool init() {
       auto fill = [](auto& v) {
          v.resize(1000);
          std::iota(v.begin(), v.end(), 0);
@@ -174,10 +176,12 @@ struct abc_t
       fill(s); fill(t); fill(u);
       fill(v); fill(w); fill(x);
       fill(y); fill(z);
+      return true;
    }
 };
 
-GLZ_META(abc_t, z,y,x,w,v,u,t,s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a);
+GLZ_META(abc_t<false>, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z);
+GLZ_META(abc_t<true>, z,y,x,w,v,u,t,s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a);
 
 #ifdef NDEBUG
 static constexpr size_t iterations = 1'000'000;
@@ -409,42 +413,15 @@ auto glaze_abc_test()
 {
    std::string buffer{};
    
-   abc_t obj{};
-   
-   auto t0 = std::chrono::steady_clock::now();
-   
-   try {
-      for (size_t i = 0; i < iterations_abc; ++i) {
-         glz::write_json(obj, buffer);
-         if (glz::read_json(obj, buffer)) {
-            std::cout << "glaze error!\n";
-            break;
-         }
-      }
-   } catch (const std::exception& e) {
-      std::cout << "glaze error: " << e.what() << '\n';
-   }
-   
-   auto t1 = std::chrono::steady_clock::now();
-   
    results r{ "Glaze", "https://github.com/stephenberry/glaze", iterations_abc };
-   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
-   // write performance
-   t0 = std::chrono::steady_clock::now();
-   
-   for (size_t i = 0; i < iterations_abc; ++i) {
-      glz::write_json(obj, buffer);
-   }
-   
-   t1 = std::chrono::steady_clock::now();
-   
-   r.json_byte_length = buffer.size();
-   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   glz::write_json(abc_t<true>{}, buffer);
    
    // read performance
    
-   t0 = std::chrono::steady_clock::now();
+   abc_t<false> obj{};
+   
+   auto t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations_abc; ++i) {
       if (glz::read_json(obj, buffer)) {
@@ -453,10 +430,11 @@ auto glaze_abc_test()
       }
    }
    
-   t1 = std::chrono::steady_clock::now();
+   auto t1 = std::chrono::steady_clock::now();
    
+   r.json_byte_length = buffer.size();
    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
-   
+      
    r.print(false);
    
    return r;
@@ -598,6 +576,68 @@ auto daw_json_link_test()
    }
    
    t1 = std::chrono::steady_clock::now();*/
+   
+   return r;
+}
+
+template<>
+struct daw::json::json_data_contract<abc_t<false>> {
+  using type = json_member_list<json_array<"a", int64_t>,
+   json_array<"b", int64_t>,
+   json_array<"c", int64_t>,
+   json_array<"d", int64_t>,
+   json_array<"e", int64_t>,
+   json_array<"f", int64_t>,
+   json_array<"g", int64_t>,
+   json_array<"h", int64_t>,
+   json_array<"i", int64_t>,
+   json_array<"j", int64_t>,
+   json_array<"k", int64_t>,
+   json_array<"l", int64_t>,
+   json_array<"m", int64_t>,
+   json_array<"n", int64_t>,
+   json_array<"o", int64_t>,
+   json_array<"p", int64_t>,
+   json_array<"q", int64_t>,
+   json_array<"r", int64_t>,
+   json_array<"s", int64_t>,
+   json_array<"t", int64_t>,
+   json_array<"u", int64_t>,
+   json_array<"v", int64_t>,
+   json_array<"w", int64_t>,
+   json_array<"x", int64_t>,
+   json_array<"y", int64_t>,
+   json_array<"z", int64_t>>;
+   
+   static constexpr auto to_json_data( abc_t<false> const & v ) {
+         return std::forward_as_tuple( v.a, v.b, v.c, v.d, v.e, v.f, v.g, v.h, //
+                                      v.i, v.j, v.k, v.l, v.m, v.n, v.o, v.p, v.q, //
+                                      v.r, v.s, v.t, v.u, v.v, v.w, v.x, v.y, v.z);
+       }
+};
+
+auto daw_json_link_abc_test()
+{
+   std::string buffer = glz::write_json(abc_t<true>{});
+   
+   abc_t<false> obj{};
+   
+   results r{ "daw_json_link", "https://github.com/beached/daw_json_link", iterations };
+   
+   // read performance
+   
+   auto t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations_abc; ++i) {
+      obj = daw::json::from_json<abc_t<false>>(buffer);
+   }
+   
+   auto t1 = std::chrono::steady_clock::now();
+   
+   r.json_byte_length = buffer.size();
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   r.print(false);
    
    return r;
 }
@@ -930,14 +970,14 @@ auto simdjson_test()
 }
 
 struct on_demand_abc {
-   bool read(abc_t& obj, const simdjson::padded_string &json);
+   bool read(abc_t<false>& obj, const simdjson::padded_string &json);
 private:
    simdjson::ondemand::parser parser{};
 };
 
 #define SIMD_PULL(x) simdjson::ondemand::array x = doc[#x]; obj.x.clear(); for (int64_t value : x) { obj.x.emplace_back(value); }
 
-bool on_demand_abc::read(abc_t& obj, const simdjson::padded_string &json) {
+bool on_demand_abc::read(abc_t<false>& obj, const simdjson::padded_string &json) {
   auto doc = parser.iterate(json);
    
    SIMD_PULL(a); SIMD_PULL(b); SIMD_PULL(c);
@@ -955,10 +995,10 @@ bool on_demand_abc::read(abc_t& obj, const simdjson::padded_string &json) {
 
 auto simdjson_abc_test()
 {
-   abc_t obj{};
-   
-   std::string buffer = glz::write_json(obj);
+   std::string buffer = glz::write_json(abc_t<true>{});
    std::string minified = buffer;
+   
+   abc_t<false> obj{};
    
    size_t new_length{}; // It will receive the minified length.
    [[maybe_unused]] auto error = simdjson::minify(buffer.data(), buffer.size(), minified.data(), new_length);
@@ -1712,11 +1752,11 @@ void test0()
    results.emplace_back(glaze_test());
    results.emplace_back(simdjson_test());
    results.emplace_back(yyjson_test());
-   //results.emplace_back(daw_json_link_test());
-   //results.emplace_back(rapidjson_test());
-   //results.emplace_back(json_struct_test());
-   //results.emplace_back(boost_json_test());
-   //results.emplace_back(nlohmann_test());
+   results.emplace_back(daw_json_link_abc_test());
+   results.emplace_back(rapidjson_test());
+   results.emplace_back(json_struct_test());
+   results.emplace_back(boost_json_test());
+   results.emplace_back(nlohmann_test());
 #ifdef HAVE_QT
    results.emplace_back(qtjson_test());
 #endif
