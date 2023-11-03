@@ -1795,8 +1795,8 @@ void abc_test()
 {
    std::vector<results> results;
    results.emplace_back(glaze_abc_test());
-   results.emplace_back(simdjson_abc_test());
    results.emplace_back(daw_json_link_abc_test());
+   results.emplace_back(simdjson_abc_test());
    
    std::ofstream table{ "json_stats_abc.md" };
    if (table) {
