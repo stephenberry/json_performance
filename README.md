@@ -1,7 +1,7 @@
 # json_performance
 Performance profiling of JSON libraries
 
-Latest results (October 2, 2023):
+Latest results (November 3, 2023):
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
@@ -15,6 +15,10 @@ Latest results (October 2, 2023):
 | [**nlohmann**](https://github.com/nlohmann/json)             | **15.39**          | **79**       | **75**      |
 
 >  1,000,000 iterations on a single core (MacBook Pro M1)
+
+*Note: [simdjson](https://github.com/simdjson/simdjson) is great, but can experience major performance losses when the data is not in the expected sequence or any keys are missing (the problem grows as the file size increases, as it must re-iterate through the document). And for large, nested objects, simdjson typically requires significantly more coding from the user.*
+
+*Note: [daw_json_link](https://github.com/beached/daw_json_link) does not easily support reading with missing keys. So, the code is not tested with this functionality like the rest of the libraries. If missing keys are expected daw_json_link suffers significant performance losses.*
 
 Test object (minified for test):
 
