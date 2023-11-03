@@ -791,65 +791,100 @@ auto json_struct_test()
 #include "simdjson.h"
 
 // Note: the on demand parser does not allow multiple instances of the same key with different data specified
-
-using namespace simdjson;
+// Note: we must use find_field_unordered if keys can be missing, because find_field will iterate past keys that we might want to parse
 
 struct on_demand {
-   bool read_in_order(obj_t& obj, const padded_string &json);
+   bool read_in_order(obj_t& obj, const simdjson::padded_string &json);
 private:
-  ondemand::parser parser{};
+   simdjson::ondemand::parser parser{};
 };
 
-bool on_demand::read_in_order(obj_t& obj, const padded_string &json) {
+
+bool on_demand::read_in_order(obj_t& obj, const simdjson::padded_string &json) {
+   using namespace simdjson;
   auto doc = parser.iterate(json);
-   ondemand::object fixed_object = doc["fixed_object"];
-   
-   ondemand::array int_array = fixed_object["int_array"];
-   obj.fixed_object.int_array.clear();
-   for (int64_t x : int_array) { obj.fixed_object.int_array.emplace_back(x); }
-   
-   ondemand::array float_array = fixed_object["float_array"];
-   obj.fixed_object.float_array.clear();
-   // doesn't have a direct float conversion
-   for (double x : float_array) { obj.fixed_object.float_array.emplace_back(static_cast<float>(x)); }
-   
-   ondemand::array double_array = fixed_object["double_array"];
-   obj.fixed_object.double_array.clear();
-   for (double x : double_array) { obj.fixed_object.double_array.emplace_back(x); }
-   
-   ondemand::object fixed_name_object = doc["fixed_name_object"];
-   obj.fixed_name_object.name0 = std::string_view(fixed_name_object["name0"]);
-   obj.fixed_name_object.name1 = std::string_view(fixed_name_object["name1"]);
-   obj.fixed_name_object.name2 = std::string_view(fixed_name_object["name2"]);
-   obj.fixed_name_object.name3 = std::string_view(fixed_name_object["name3"]);
-   obj.fixed_name_object.name4 = std::string_view(fixed_name_object["name4"]);
-   
-   ondemand::object another_object = doc["another_object"];
-   obj.another_object.string = std::string_view(another_object["string"]);
-   obj.another_object.another_string = std::string_view(another_object["another_string"]);
-   obj.another_object.boolean = bool(another_object["boolean"]);
-   
-   ondemand::object nested_object = another_object["nested_object"];
-   ondemand::array v3s = nested_object["v3s"];
-   obj.another_object.nested_object.v3s.clear();
-   for (ondemand::array v3 : v3s) {
-      size_t i = 0;
-      auto& back = obj.another_object.nested_object.v3s.emplace_back();
-      for (double x : v3) {
-         back[i++] = x;
+   if (auto fixed_object = doc.find_field_unordered("fixed_object"); fixed_object.error() == SUCCESS) {
+      if (auto int_array = fixed_object.find_field_unordered("int_array"); int_array.error() == SUCCESS) {
+         obj.fixed_object.int_array.clear();
+         for (int64_t x : int_array) { obj.fixed_object.int_array.emplace_back(x); }
+      }
+      
+      if (auto float_array = fixed_object.find_field_unordered("float_array"); float_array.error() == SUCCESS) {
+         obj.fixed_object.float_array.clear();
+         // doesn't have a direct float conversion
+         for (double x : float_array) { obj.fixed_object.float_array.emplace_back(static_cast<float>(x)); }
+      }
+      
+      if (auto double_array = fixed_object.find_field_unordered("double_array"); double_array.error() == SUCCESS) {
+         obj.fixed_object.double_array.clear();
+         for (double x : double_array) { obj.fixed_object.double_array.emplace_back(x); }
       }
    }
    
-   obj.another_object.nested_object.id = std::string_view(nested_object["id"]);
+   if (auto fixed_name_object = doc.find_field_unordered("fixed_name_object"); fixed_name_object.error() == SUCCESS) {
+      if (auto name0 = fixed_name_object.find_field_unordered("name0"); name0.error() == SUCCESS) {
+         obj.fixed_name_object.name0 = std::string_view(name0);
+      }
+      if (auto name1 = fixed_name_object.find_field_unordered("name1"); name1.error() == SUCCESS) {
+         obj.fixed_name_object.name1 = std::string_view(name1);
+      }
+      if (auto name2 = fixed_name_object.find_field_unordered("name2"); name2.error() == SUCCESS) {
+         obj.fixed_name_object.name2 = std::string_view(name2);
+      }
+      if (auto name3 = fixed_name_object.find_field_unordered("name3"); name3.error() == SUCCESS) {
+         obj.fixed_name_object.name3 = std::string_view(name3);
+      }
+      if (auto name4 = fixed_name_object.find_field_unordered("name4"); name4.error() == SUCCESS) {
+         obj.fixed_name_object.name4 = std::string_view(name4);
+      }
+   }
    
-   ondemand::array string_array = doc["string_array"];
-   obj.string_array.clear();
-   for (std::string_view x : string_array) { obj.string_array.emplace_back(x); }
+   if (auto another_object = doc.find_field_unordered("another_object"); another_object.error() == SUCCESS) {
+      if (auto string = another_object.find_field_unordered("string"); string.error() == SUCCESS) {
+         obj.another_object.string = std::string_view(string);
+      }
+      if (auto another_string = another_object.find_field_unordered("another_string"); another_string.error() == SUCCESS) {
+         obj.another_object.another_string = std::string_view(another_string);
+      }
+      if (auto boolean = another_object.find_field_unordered("boolean"); boolean.error() == SUCCESS) {
+         obj.another_object.boolean = bool(boolean);
+      }
+      
+      if (auto nested_object = another_object.find_field_unordered("nested_object"); nested_object.error() == SUCCESS) {
+         if (auto v3s = nested_object.find_field_unordered("v3s"); v3s.error() == SUCCESS) {
+            obj.another_object.nested_object.v3s.clear();
+            for (ondemand::array v3 : v3s) {
+               size_t i = 0;
+               auto& back = obj.another_object.nested_object.v3s.emplace_back();
+               for (double x : v3) {
+                  back[i++] = x;
+               }
+            }
+         }
+         
+         if (auto id = nested_object.find_field_unordered("id"); id.error() == SUCCESS) {
+            obj.another_object.nested_object.id = std::string_view(id);
+         }
+      }
+   }
    
-   obj.string = std::string_view(doc["string"]);
-   obj.number = double(doc["number"]);
-   obj.boolean = bool(doc["boolean"]);
-   obj.another_bool = bool(doc["another_bool"]);
+   if (auto string_array = doc.find_field_unordered("string_array"); string_array.error() == SUCCESS) {
+      obj.string_array.clear();
+      for (std::string_view x : string_array) { obj.string_array.emplace_back(x); }
+   }
+   
+   if (auto string = doc.find_field_unordered("string"); string.error() == SUCCESS) {
+      obj.string = std::string_view(string);
+   }
+   if (auto number = doc.find_field_unordered("number"); number.error() == SUCCESS) {
+      obj.number = double(number);
+   }
+   if (auto boolean = doc.find_field_unordered("boolean"); boolean.error() == SUCCESS) {
+      obj.boolean = bool(boolean);
+   }
+   if (auto another_bool = doc.find_field_unordered("another_bool"); another_bool.error() == SUCCESS) {
+      obj.another_bool = bool(another_bool);
+   }
    
   return false;
 }
@@ -863,7 +898,7 @@ auto simdjson_test()
    [[maybe_unused]] auto error = simdjson::minify(buffer.data(), buffer.size(), minified.data(), new_length);
    minified.resize(new_length);
    
-   padded_string padded = minified;
+   simdjson::padded_string padded = minified;
    
    on_demand parser{};
    
@@ -895,14 +930,14 @@ auto simdjson_test()
 }
 
 struct on_demand_abc {
-   bool read(abc_t& obj, const padded_string &json);
+   bool read(abc_t& obj, const simdjson::padded_string &json);
 private:
-  ondemand::parser parser{};
+   simdjson::ondemand::parser parser{};
 };
 
-#define SIMD_PULL(x) ondemand::array x = doc[#x]; obj.x.clear(); for (int64_t value : x) { obj.x.emplace_back(value); }
+#define SIMD_PULL(x) simdjson::ondemand::array x = doc[#x]; obj.x.clear(); for (int64_t value : x) { obj.x.emplace_back(value); }
 
-bool on_demand_abc::read(abc_t& obj, const padded_string &json) {
+bool on_demand_abc::read(abc_t& obj, const simdjson::padded_string &json) {
   auto doc = parser.iterate(json);
    
    SIMD_PULL(a); SIMD_PULL(b); SIMD_PULL(c);
@@ -929,7 +964,7 @@ auto simdjson_abc_test()
    [[maybe_unused]] auto error = simdjson::minify(buffer.data(), buffer.size(), minified.data(), new_length);
    minified.resize(new_length);
    
-   padded_string padded = minified;
+   simdjson::padded_string padded = minified;
    
    on_demand_abc parser{};
    
@@ -1662,12 +1697,12 @@ void test0()
    std::vector<results> results;
    results.emplace_back(glaze_test());
    results.emplace_back(simdjson_test());
-   results.emplace_back(yyjson_test());
-   results.emplace_back(daw_json_link_test());
-   results.emplace_back(rapidjson_test());
-   results.emplace_back(json_struct_test());
-   results.emplace_back(boost_json_test());
-   results.emplace_back(nlohmann_test());
+   //results.emplace_back(yyjson_test());
+   //results.emplace_back(daw_json_link_test());
+   //results.emplace_back(rapidjson_test());
+   //results.emplace_back(json_struct_test());
+   //results.emplace_back(boost_json_test());
+   //results.emplace_back(nlohmann_test());
 #ifdef HAVE_QT
    results.emplace_back(qtjson_test());
 #endif
