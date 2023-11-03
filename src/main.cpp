@@ -1249,28 +1249,35 @@ bool yyjson_read_json(obj_t& obj, std::string const& json)
 {
    auto const doc = yyjson_read(json.c_str(), json.size(), 0);
    auto const root = yyjson_doc_get_root(doc);
-
-   auto const fixed_object = yyjson_obj_get(root, "fixed_object");
-
+   
    size_t index, array_size;
    yyjson_val* value;
 
-   auto const int_array = yyjson_obj_get(fixed_object, "int_array");
-   obj.fixed_object.int_array.clear();
-   yyjson_arr_foreach(int_array, index, array_size, value) {
-      obj.fixed_object.int_array.emplace_back(yyjson_get_int(value));
-   }
+   auto const fixed_object = yyjson_obj_get(root, "fixed_object");
+   if (fixed_object) {
+      auto const int_array = yyjson_obj_get(fixed_object, "int_array");
+      if (int_array) {
+         obj.fixed_object.int_array.clear();
+         yyjson_arr_foreach(int_array, index, array_size, value) {
+            obj.fixed_object.int_array.emplace_back(yyjson_get_int(value));
+         }
+      }
 
-   auto const float_array = yyjson_obj_get(fixed_object, "float_array");
-   obj.fixed_object.float_array.clear();
-   yyjson_arr_foreach(float_array, index, array_size, value) {
-      obj.fixed_object.float_array.emplace_back(yyjson_get_real(value));
-   }
+      auto const float_array = yyjson_obj_get(fixed_object, "float_array");
+      if (float_array) {
+         obj.fixed_object.float_array.clear();
+         yyjson_arr_foreach(float_array, index, array_size, value) {
+            obj.fixed_object.float_array.emplace_back(yyjson_get_real(value));
+         }
+      }
 
-   auto const double_array = yyjson_obj_get(fixed_object, "double_array");
-   obj.fixed_object.double_array.clear();
-   yyjson_arr_foreach(double_array, index, array_size, value) {
-      obj.fixed_object.double_array.emplace_back(yyjson_get_real(value));
+      auto const double_array = yyjson_obj_get(fixed_object, "double_array");
+      if (double_array) {
+         obj.fixed_object.double_array.clear();
+         yyjson_arr_foreach(double_array, index, array_size, value) {
+            obj.fixed_object.double_array.emplace_back(yyjson_get_real(value));
+         }
+      }
    }
 
    auto&& to_string_view = [] (yyjson_val* const val) noexcept {
@@ -1278,33 +1285,40 @@ bool yyjson_read_json(obj_t& obj, std::string const& json)
    };
 
    auto fixed_name_object = yyjson_obj_get(root, "fixed_name_object");
-   obj.fixed_name_object.name0 = to_string_view(yyjson_obj_get(fixed_name_object, "name0"));
-   obj.fixed_name_object.name1 = to_string_view(yyjson_obj_get(fixed_name_object, "name1"));
-   obj.fixed_name_object.name2 = to_string_view(yyjson_obj_get(fixed_name_object, "name2"));
-   obj.fixed_name_object.name3 = to_string_view(yyjson_obj_get(fixed_name_object, "name3"));
-   obj.fixed_name_object.name4 = to_string_view(yyjson_obj_get(fixed_name_object, "name4"));
-
-   auto another_object = yyjson_obj_get(root, "another_object");
-   obj.another_object.string = to_string_view(yyjson_obj_get(another_object, "string"));
-   obj.another_object.another_string = to_string_view(yyjson_obj_get(another_object, "another_string"));
-   obj.another_object.boolean = yyjson_get_bool(yyjson_obj_get(another_object, "boolean"));
-
-   auto nested_object = yyjson_obj_get(another_object, "nested_object");
-   auto v3s = yyjson_obj_get(nested_object, "v3s");
-   obj.another_object.nested_object.v3s.clear();
-   yyjson_arr_foreach(v3s, index, array_size, value) {
-      size_t i = 0;
-      auto& back = obj.another_object.nested_object.v3s.emplace_back();
-
-      size_t index2, array_size2;
-      yyjson_val* value2;
-
-      yyjson_arr_foreach(value, index2, array_size2, value2) {
-         back[i++] = yyjson_get_real(value2);
-      }
+   if (fixed_name_object) {
+      obj.fixed_name_object.name0 = to_string_view(yyjson_obj_get(fixed_name_object, "name0"));
+      obj.fixed_name_object.name1 = to_string_view(yyjson_obj_get(fixed_name_object, "name1"));
+      obj.fixed_name_object.name2 = to_string_view(yyjson_obj_get(fixed_name_object, "name2"));
+      obj.fixed_name_object.name3 = to_string_view(yyjson_obj_get(fixed_name_object, "name3"));
+      obj.fixed_name_object.name4 = to_string_view(yyjson_obj_get(fixed_name_object, "name4"));
    }
 
-   obj.another_object.nested_object.id = to_string_view(yyjson_obj_get(nested_object, "id"));
+   auto another_object = yyjson_obj_get(root, "another_object");
+   if (another_object)
+   {
+      obj.another_object.string = to_string_view(yyjson_obj_get(another_object, "string"));
+      obj.another_object.another_string = to_string_view(yyjson_obj_get(another_object, "another_string"));
+      obj.another_object.boolean = yyjson_get_bool(yyjson_obj_get(another_object, "boolean"));
+   }
+
+   auto nested_object = yyjson_obj_get(another_object, "nested_object");
+   if (nested_object) {
+      auto v3s = yyjson_obj_get(nested_object, "v3s");
+      obj.another_object.nested_object.v3s.clear();
+      yyjson_arr_foreach(v3s, index, array_size, value) {
+         size_t i = 0;
+         auto& back = obj.another_object.nested_object.v3s.emplace_back();
+
+         size_t index2, array_size2;
+         yyjson_val* value2;
+
+         yyjson_arr_foreach(value, index2, array_size2, value2) {
+            back[i++] = yyjson_get_real(value2);
+         }
+      }
+
+      obj.another_object.nested_object.id = to_string_view(yyjson_obj_get(nested_object, "id"));
+   }
 
    auto string_array = yyjson_obj_get(root, "string_array");
    obj.string_array.resize(yyjson_arr_size(string_array));
@@ -1697,7 +1711,7 @@ void test0()
    std::vector<results> results;
    results.emplace_back(glaze_test());
    results.emplace_back(simdjson_test());
-   //results.emplace_back(yyjson_test());
+   results.emplace_back(yyjson_test());
    //results.emplace_back(daw_json_link_test());
    //results.emplace_back(rapidjson_test());
    //results.emplace_back(json_struct_test());
