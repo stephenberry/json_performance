@@ -290,6 +290,19 @@ struct results
          return fmt::format(s, name, url, roundtrip, write, read);
       }
    }
+   
+   std::string json_stats_read(bool use_minified = true) const {
+      static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** |)";
+      if (json_byte_length) {
+         const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
+         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
+         return fmt::format(s, name, url, read);
+      }
+      else {
+         const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
+         return fmt::format(s, name, url, read);
+      }
+   }
 };
 
 auto glaze_test()
@@ -1746,6 +1759,10 @@ static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
 
+static constexpr std::string_view table_header_read = R"(
+| Library                                                      | Read (MB/s) |
+| ------------------------------------------------------------ | ----------- |)";
+
 void test0()
 {
    std::vector<results> results;
@@ -1784,9 +1801,9 @@ void abc_test()
    std::ofstream table{ "json_stats_abc.md" };
    if (table) {
       const auto n = results.size();
-      table << table_header << '\n';
+      table << table_header_read << '\n';
       for (size_t i = 0; i < n; ++i) {
-         table << results[i].json_stats(false);
+         table << results[i].json_stats_read(false);
          if (i != n - 1) {
             table << '\n';
          }
