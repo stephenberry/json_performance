@@ -97,9 +97,9 @@ template <>
 struct glz::meta<fixed_object_t> {
    using T = fixed_object_t;
    static constexpr auto value = object(
-      "int_array", &T::int_array,
-      "float_array", &T::float_array,
-      "double_array", &T::double_array
+      &T::int_array,
+      &T::float_array,
+      &T::double_array
    );
 };
 
@@ -107,11 +107,11 @@ template <>
 struct glz::meta<fixed_name_object_t> {
    using T = fixed_name_object_t;
    static constexpr auto value = object(
-      "name0", &T::name0,
-      "name1", &T::name1,
-      "name2", &T::name2,
-      "name3", &T::name3,
-      "name4", &T::name4
+      &T::name0,
+      &T::name1,
+      &T::name2,
+      &T::name3,
+      &T::name4
    );
 };
 
@@ -119,8 +119,8 @@ template <>
 struct glz::meta<nested_object_t> {
    using T = nested_object_t;
    static constexpr auto value = object(
-      "v3s", &T::v3s,
-      "id", &T::id
+      &T::v3s,
+      &T::id
    );
 };
 
@@ -128,10 +128,10 @@ template <>
 struct glz::meta<another_object_t> {
    using T = another_object_t;
    static constexpr auto value = object(
-      "string", &T::string,
-      "another_string", &T::another_string,
-      "boolean", &T::boolean,
-      "nested_object", &T::nested_object
+      &T::string,
+      &T::another_string,
+      &T::boolean,
+      &T::nested_object
    );
 };
 
@@ -139,14 +139,14 @@ template <>
 struct glz::meta<obj_t> {
    using T = obj_t;
    static constexpr auto value = object(
-      "fixed_object", &T::fixed_object,
-      "fixed_name_object", &T::fixed_name_object,
-      "another_object", &T::another_object,
-      "string_array", &T::string_array,
-      "string", &T::string,
-      "number", &T::number,
-      "boolean", &T::boolean,
-      "another_bool", &T::another_bool
+      &T::fixed_object,
+      &T::fixed_name_object,
+      &T::another_object,
+      &T::string_array,
+      &T::string,
+      &T::number,
+      &T::boolean,
+      &T::another_bool
    );
 };
 
