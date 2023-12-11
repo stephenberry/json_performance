@@ -1,4 +1,5 @@
 #include "glaze/glaze.hpp"
+#include "glaze/glaze_exceptions.hpp"
 #include "glaze/core/macros.hpp"
 
 static constexpr std::string_view json0 = R"(
@@ -149,10 +150,6 @@ struct glz::meta<obj_t> {
       &T::another_bool
    );
 };
-
-// Or, use macros for Glaze registration
-/*GLZ_META(obj_t, fixed_object, fixed_name_object, another_object,
-         string_array, string, number, boolean, another_bool);*/
 
 // for testing large, flat documents and out of sequence reading
 template <bool backward>
@@ -305,6 +302,29 @@ struct results
    }
 };
 
+template <class T>
+inline bool is_valid_write(const std::string& buffer, const std::string& library_name) {
+   T obj{};
+   
+   glz::ex::read_json(obj, json0);
+   
+   std::string reference{}; // reference to compare again
+   glz::write_json(obj, reference);
+   
+   obj = {};
+   glz::ex::read_json(obj, buffer);
+   
+   std::string compare{};
+   glz::write_json(obj, compare);
+   
+   if (reference != compare) {
+      std::cout << "Invalid write for library: " << library_name << std::endl;
+      return false;
+   }
+   
+   return true;
+}
+
 auto glaze_test()
 {
    std::string buffer{ json0 };
@@ -321,13 +341,6 @@ auto glaze_test()
          }
          glz::write_json(obj, buffer);
       }
-      
-      // raw buffer version (unsafe)
-      /*for (size_t i = 0; i < iterations; ++i) {
-         glz::read_json(obj, buffer);
-         const auto n = glz::write_json(obj, buffer.data());
-         buffer.resize(n);
-      }*/
    } catch (const std::exception& e) {
       std::cout << "glaze error: " << e.what() << '\n';
    }
@@ -349,6 +362,8 @@ auto glaze_test()
    r.json_byte_length = buffer.size();
    minified_byte_length = *r.json_byte_length;
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   is_valid_write<obj_t>(buffer, "Glaze");
    
    // read performance
    
@@ -565,6 +580,8 @@ auto daw_json_link_test()
    r.json_byte_length = buffer.size();
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
+   is_valid_write<obj_t>(buffer, "daw_json_link");
+   
    // read performance
    
    t0 = std::chrono::steady_clock::now();
@@ -756,6 +773,8 @@ auto nlohmann_test()
    r.json_byte_length = buffer.size();
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
+   is_valid_write<obj_t>(buffer, "nlohmann");
+   
    // read performance
    
    t0 = std::chrono::steady_clock::now();
@@ -820,6 +839,8 @@ auto json_struct_test()
    
    r.json_byte_length = buffer.size();
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   is_valid_write<obj_t>(buffer, "json_struct");
    
    // read performance
    t0 = std::chrono::steady_clock::now();
@@ -1279,6 +1300,8 @@ auto rapidjson_test()
    r.json_byte_length = buffer.size();
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
+   is_valid_write<obj_t>(buffer, "rapidjson");
+   
    // read performance
    
    t0 = std::chrono::steady_clock::now();
@@ -1483,6 +1506,8 @@ auto yyjson_test()
 
    r.json_byte_length = buffer.size();
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   is_valid_write<obj_t>(buffer, "yyjson");
 
    // read performance
 
@@ -1665,6 +1690,8 @@ results qtjson_test()
 
     r.json_byte_length = buffer.size();
     r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   is_valid_write<obj_t>(buffer, "QT");
 
     // read performance
 
@@ -1729,6 +1756,8 @@ auto boost_json_test()
 
    r.json_byte_length = buffer.size();
    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   is_valid_write<obj_t>(buffer, "Boost JSON");
 
    // read performance
 
