@@ -39,6 +39,7 @@ Test object (minified for test):
    "another_object": {
       "string": "here is some text",
       "another_string": "Hello World",
+      "escaped_text": "{\"some key\":\"some string value\"}",
       "boolean": false,
       "nested_object": {
          "v3s": [[0.12345, 0.23456, 0.001345],

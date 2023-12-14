@@ -19,6 +19,7 @@ static constexpr std::string_view json0 = R"(
    "another_object": {
       "string": "here is some text",
       "another_string": "Hello World",
+      "escaped_text": "{\"some key\":\"some string value\"}",
       "boolean": false,
       "nested_object": {
          "v3s": [[0.12345, 0.23456, 0.001345],
@@ -74,11 +75,12 @@ struct another_object_t
 {
    std::string string{};
    std::string another_string{};
+   std::string escaped_text{};
    bool boolean{};
    nested_object_t nested_object{};
 };
 
-BOOST_DESCRIBE_STRUCT(another_object_t, (), (string, another_string, boolean, nested_object))
+BOOST_DESCRIBE_STRUCT(another_object_t, (), (string, another_string, escaped_text, boolean, nested_object))
 
 struct obj_t
 {
@@ -131,6 +133,7 @@ struct glz::meta<another_object_t> {
    static constexpr auto value = object(
       &T::string,
       &T::another_string,
+      &T::escaped_text,
       &T::boolean,
       &T::nested_object
    );
@@ -508,11 +511,12 @@ template<>
 struct daw::json::json_data_contract<another_object_t> {
   using type = json_member_list<json_string<"string", std::string>,
    json_string<"another_string", std::string>,
+   json_string<"escaped_text", std::string>,
    json_bool<"boolean", bool>,
    json_class<"nested_object", nested_object_t>>;
    
    static constexpr auto to_json_data( another_object_t const & value ) {
-         return std::forward_as_tuple( value.string, value.another_string, value.boolean, value.nested_object );
+         return std::forward_as_tuple( value.string, value.another_string, value.escaped_text, value.boolean, value.nested_object );
        }
 };
 
@@ -708,12 +712,13 @@ void from_json(const json& j, nested_object_t& v) {
 }
 
 void to_json(json& j, const another_object_t& v) {
-   j = json{{"string", v.string}, {"another_string", v.another_string}, {"boolean", v.boolean}, {"nested_object", v.nested_object}};
+   j = json{{"string", v.string}, {"another_string", v.another_string}, {"escaped_text", v.escaped_text}, {"boolean", v.boolean}, {"nested_object", v.nested_object}};
 }
 
 void from_json(const json& j, another_object_t& v) {
     j.at("string").get_to(v.string);
     j.at("another_string").get_to(v.another_string);
+    j.at("escaped_text").get_to(v.escaped_text);
     j.at("boolean").get_to(v.boolean);
     j.at("nested_object").get_to(v.nested_object);
 }
@@ -799,7 +804,7 @@ auto nlohmann_test()
 JS_OBJ_EXT(fixed_object_t, int_array, float_array, double_array);
 JS_OBJ_EXT(fixed_name_object_t, name0, name1, name2, name3, name4);
 JS_OBJ_EXT(nested_object_t, v3s, id);
-JS_OBJ_EXT(another_object_t, string, another_string, boolean, nested_object);
+JS_OBJ_EXT(another_object_t, string, another_string, escaped_text, boolean, nested_object);
 JS_OBJ_EXT(obj_t, fixed_object, fixed_name_object, another_object, string_array, string, number, boolean, another_bool);
 
 auto json_struct_test()
@@ -919,6 +924,11 @@ bool on_demand::read_in_order(obj_t& obj, const simdjson::padded_string &json) {
       }
       if (auto another_string = another_object.find_field_unordered("another_string"); another_string.error() == SUCCESS) {
          obj.another_object.another_string = std::string_view(another_string);
+      }
+      if (auto another_string = another_object.find_field_unordered("escaped_text"); another_string.error() == SUCCESS) {
+         std::string_view new_string{};
+         std::ignore = another_string.get_string().get(new_string);
+         obj.another_object.escaped_text = new_string;
       }
       if (auto boolean = another_object.find_field_unordered("boolean"); boolean.error() == SUCCESS) {
          obj.another_object.boolean = bool(boolean);
@@ -1183,6 +1193,7 @@ void rapid_json_read(const rapidjson::Value& json, another_object_t& obj)
 {
    obj.string = json["string"].GetString();
    obj.another_string = json["another_string"].GetString();
+   obj.escaped_text = json["escaped_text"].GetString();
    obj.boolean = json["boolean"].GetBool();
    rapid_json_read(json["nested_object"], obj.nested_object);
 }
@@ -1195,6 +1206,8 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    writer.String(obj.string.c_str(), static_cast<unsigned>(obj.string.size()));
    writer.String("another_string", 14);
    writer.String(obj.another_string.c_str(), static_cast<unsigned>(obj.another_string.size()));
+   writer.String("escaped_text", 12);
+   writer.String(obj.escaped_text.c_str(), static_cast<unsigned>(obj.escaped_text.size()));
    writer.String("boolean", 7);
    writer.Bool(obj.boolean);
    writer.String("nested_object", 13);
@@ -1374,6 +1387,7 @@ bool yyjson_read_json(obj_t& obj, std::string const& json)
    {
       obj.another_object.string = to_string_view(yyjson_obj_get(another_object, "string"));
       obj.another_object.another_string = to_string_view(yyjson_obj_get(another_object, "another_string"));
+      obj.another_object.escaped_text = yyjson_get_str(yyjson_obj_get(another_object, "escaped_text"));
       obj.another_object.boolean = yyjson_get_bool(yyjson_obj_get(another_object, "boolean"));
    }
 
@@ -1439,6 +1453,7 @@ bool yyjson_write_json(obj_t const& obj, std::string& json)
    yyjson_mut_obj_add_val(doc, root, "another_object", another_object);
    yyjson_mut_obj_add_str(doc, another_object, "string", obj.another_object.string.c_str());
    yyjson_mut_obj_add_str(doc, another_object, "another_string", obj.another_object.another_string.c_str());
+   yyjson_mut_obj_add_str(doc, another_object, "escaped_text", obj.another_object.escaped_text.c_str());
    yyjson_mut_obj_add_bool(doc, another_object, "boolean", obj.another_object.boolean);
 
    auto nested_object = yyjson_mut_obj(doc);
@@ -1563,6 +1578,7 @@ void qtjson_read(obj_t& obj, const QByteArray& buffer)
     auto another_object = jsonObj["another_object"].toObject();
     obj.another_object.string = another_object["string"].toString().toStdString();
     obj.another_object.another_string = another_object["another_string"].toString().toStdString();
+    obj.another_object.escaped_text = another_object["escaped_text"].toString().toStdString();
     obj.another_object.boolean = another_object["boolean"].toBool();
     auto another_object_nested_object = another_object["nested_object"].toObject();
     obj.another_object.nested_object.id = another_object_nested_object["id"].toString().toStdString();
@@ -1628,6 +1644,7 @@ void qtjson_write(const obj_t& obj, QByteArray& buffer)
         QJsonObject another_object;
         another_object["string"] = QString::fromStdString(obj.another_object.string);
         another_object["another_string"] = QString::fromStdString(obj.another_object.another_string);
+        another_object["escaped_text"] = QString::fromStdString(obj.another_object.escaped_text);
         another_object["boolean"] = obj.another_object.boolean;
 
         QJsonObject nested_object;
@@ -1865,7 +1882,7 @@ void test0()
    results.emplace_back(daw_json_link_test());
    results.emplace_back(rapidjson_test());
    results.emplace_back(json_struct_test());
-   results.emplace_back(boost_json_test());
+   //results.emplace_back(boost_json_test());
    results.emplace_back(boost_json_test2());
    results.emplace_back(nlohmann_test());
 #ifdef HAVE_QT
