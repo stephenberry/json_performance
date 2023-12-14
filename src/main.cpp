@@ -1784,6 +1784,70 @@ auto boost_json_test()
    return r;
 }
 
+auto boost_json_test2()
+{
+   std::string buffer{ json0 };
+
+   obj_t obj;
+
+   auto t0 = std::chrono::steady_clock::now();
+
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         unsigned char buf[ 4096 ];
+         boost::json::monotonic_resource mr( buf );
+
+         boost::json::parse_into( obj, buffer );
+
+         auto jv2 = boost::json::value_from( obj, &mr );
+         buffer = boost::json::serialize( jv2 );
+      }
+   } catch (const std::exception& e) {
+      std::cout << "Boost.JSON error: " << e.what() << '\n';
+   }
+
+   auto t1 = std::chrono::steady_clock::now();
+
+   results r{ "Boost.JSON (direct)", "https://boost.org/libs/json", iterations };
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+
+   for (size_t i = 0; i < iterations; ++i) {
+      unsigned char buf[ 4096 ];
+      boost::json::monotonic_resource mr( buf );
+
+      auto jv2 = boost::json::value_from( obj, &mr );
+      buffer = boost::json::serialize( jv2 );
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // read performance
+
+   t0 = std::chrono::steady_clock::now();
+
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         boost::json::parse_into( obj, buffer );
+      }
+   } catch (const std::exception& e) {
+      std::cout << "Boost.JSON error: " << e.what() << '\n';
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   r.print();
+
+   return r;
+}
+
 static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
@@ -1802,6 +1866,7 @@ void test0()
    results.emplace_back(rapidjson_test());
    results.emplace_back(json_struct_test());
    results.emplace_back(boost_json_test());
+   results.emplace_back(boost_json_test2());
    results.emplace_back(nlohmann_test());
 #ifdef HAVE_QT
    results.emplace_back(qtjson_test());

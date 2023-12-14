@@ -91,7 +91,7 @@ FetchContent_MakeAvailable(fmt)
 
 FetchContent_Declare(
         boost
-        URL https://github.com/boostorg/boost/releases/download/boost-1.83.0/boost-1.83.0.tar.xz
+        URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
 )
 
 set(BOOST_INCLUDE_LIBRARIES json)
