@@ -16,7 +16,9 @@ Latest results (December 14, 2023):
 
 >  1,000,000 iterations on a single core (MacBook Pro M1) - Compiled with Clang 15
 
-*Note: [simdjson](https://github.com/simdjson/simdjson) is great, but can experience major performance losses when the data is not in the expected sequence or any keys are missing (the problem grows as the file size increases, as it must re-iterate through the document). We also assume most strings are not escaped to help simdjson with performance.*
+*Performance caveats: [simdjson](https://github.com/simdjson/simdjson) and [yyjson](https://github.com/ibireme/yyjson) are great, but they experience major performance losses when the data is not in the expected sequence or any keys are missing (the problem grows as the file size increases, as they must re-iterate through the document).*
+
+*Also, [simdjson](https://github.com/simdjson/simdjson) and [yyjson](https://github.com/ibireme/yyjson) both do not support automatic escaped string handling, so if any of the currently non-escaped strings in this benchmark were to contain an escape, the code would error.*
 
 *Note: [daw_json_link](https://github.com/beached/daw_json_link) does not easily support reading with missing keys. So, the code is not tested with this functionality like the rest of the libraries. If missing keys are expected daw_json_link suffers significant performance losses.*
 

@@ -1411,10 +1411,12 @@ bool yyjson_read_json(obj_t& obj, std::string const& json, yyjson_alc* alc)
    }
 
    auto string_array = yyjson_obj_get(root, "string_array");
-   obj.string_array.resize(yyjson_arr_size(string_array));
-   size_t i = 0;
-   yyjson_arr_foreach(string_array, index, array_size, value) {
-      obj.string_array[i++] = to_string_view(value);
+   if (string_array) {
+      obj.string_array.resize(yyjson_arr_size(string_array));
+      size_t i = 0;
+      yyjson_arr_foreach(string_array, index, array_size, value) {
+         obj.string_array[i++] = to_string_view(value);
+      }
    }
 
    obj.string = to_string_view(yyjson_obj_get(root, "string"));
@@ -1506,7 +1508,7 @@ auto yyjson_test()
          yyjson_write_json(obj, buffer, alc);
       }
    } catch (const std::exception& e) {
-      std::cout << "daw_json_link error: " << e.what() << '\n';
+      std::cout << "yyjson error: " << e.what() << '\n';
    }
 
    auto t1 = std::chrono::steady_clock::now();
