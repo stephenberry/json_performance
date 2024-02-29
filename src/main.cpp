@@ -180,8 +180,21 @@ struct abc_t
    }
 };
 
-GLZ_META(abc_t<false>, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z);
-GLZ_META(abc_t<true>, z,y,x,w,v,u,t,s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a);
+template <>
+struct glz::meta<abc_t<false>>
+{
+   using T = abc_t<false>;
+   static constexpr auto value = object(&T::a,&T::b,&T::c,&T::d,&T::e,&T::f,&T::g,&T::h,&T::i,&T::j,&T::k,&T::l,&T::m,&T::n,
+                                        &T::o,&T::p,&T::q,&T::r,&T::s,&T::t,&T::u,&T::v,&T::w,&T::x,&T::y,&T::z);
+};
+
+template <>
+struct glz::meta<abc_t<true>>
+{
+   using T = abc_t<true>;
+   static constexpr auto value = object(&T::z,&T::y,&T::x,&T::w,&T::v,&T::u,&T::t,&T::s,&T::r,&T::q,&T::p,&T::o,&T::n,
+                                        &T::m,&T::l,&T::k,&T::j,&T::i,&T::h,&T::g,&T::f,&T::e,&T::d,&T::c,&T::b,&T::a);
+};
 
 #ifdef NDEBUG
 static constexpr size_t iterations = 1'000'000;
