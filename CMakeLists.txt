@@ -27,9 +27,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glaze)
 
-#FetchContent_Declare(glaze URL https://github.com/stephenberry/glaze/archive/refs/tags/v1.1.2.tar.gz)
-#FetchContent_MakeAvailable(glaze)
-
 FetchContent_Declare(
         rapidjson
         URL https://github.com/Tencent/rapidjson/archive/refs/tags/v1.1.0.tar.gz
