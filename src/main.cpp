@@ -1,6 +1,5 @@
 #include "glaze/glaze.hpp"
 #include "glaze/glaze_exceptions.hpp"
-#include "glaze/core/macros.hpp"
 
 static constexpr std::string_view json0 = R"(
 {
