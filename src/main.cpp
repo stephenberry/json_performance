@@ -1,7 +1,7 @@
 #include "glaze/glaze.hpp"
 #include "glaze/glaze_exceptions.hpp"
 
-static constexpr std::string_view json0 = R"(
+[[maybe_unused]] constexpr std::string_view json_whitespace = R"(
 {
    "fixed_object": {
       "int_array": [0, 1, 2, 3, 4, 5, 6],
@@ -34,6 +34,8 @@ static constexpr std::string_view json0 = R"(
    "another_bool": false
 }
 )";
+
+constexpr std::string_view json_minified = R"({"fixed_object":{"int_array":[0,1,2,3,4,5,6],"float_array":[0.1,0.2,0.3,0.4,0.5,0.6],"double_array":[3288398.238,2.33e+24,28.9,0.928759872,0.22222848,0.1,0.2,0.3,0.4]},"fixed_name_object":{"name0":"James","name1":"Abraham","name2":"Susan","name3":"Frank","name4":"Alicia"},"another_object":{"string":"here is some text","another_string":"Hello World","escaped_text":"{\"some key\":\"some string value\"}","boolean":false,"nested_object":{"v3s":[[0.12345,0.23456,0.001345],[0.3894675,97.39827,297.92387],[18.18,87.289,2988.298]],"id":"298728949872"}},"string_array":["Cat","Dog","Elephant","Tiger"],"string":"Hello world","number":3.14,"boolean":true,"another_bool":false})";
 
 #include <chrono>
 #include <iostream>
@@ -396,7 +398,7 @@ template <class T>
 inline bool is_valid_write(const std::string& buffer, const std::string& library_name) {
    T obj{};
    
-   glz::ex::read_json(obj, json0);
+   glz::ex::read_json(obj, json_minified);
    
    std::string reference{}; // reference to compare again
    glz::write_json(obj, reference);
@@ -415,9 +417,10 @@ inline bool is_valid_write(const std::string& buffer, const std::string& library
    return true;
 }
 
+template <glz::opts Opts>
 auto glaze_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    
@@ -425,7 +428,7 @@ auto glaze_test()
    
    try {
       for (size_t i = 0; i < iterations; ++i) {
-         if (glz::read_json(obj, buffer)) {
+         if (glz::read<Opts>(obj, buffer)) {
             std::cout << "glaze error!\n";
             break;
          }
@@ -437,14 +440,14 @@ auto glaze_test()
    
    auto t1 = std::chrono::steady_clock::now();
    
-   results r{ "Glaze", "https://github.com/stephenberry/glaze", iterations };
+   results r{ Opts.minified ? "Glaze (.minified)" : "Glaze", "https://github.com/stephenberry/glaze", iterations };
    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // write performance
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      glz::write_json(obj, buffer);
+      glz::write<Opts>(obj, buffer);
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -731,7 +734,7 @@ struct daw::json::json_data_contract<obj_t> {
 
 auto daw_json_link_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    
@@ -922,7 +925,7 @@ void from_json(const json& j, obj_t& v) {
 
 auto nlohmann_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    json j;
@@ -991,7 +994,7 @@ JS_OBJ_EXT(obj_t, fixed_object, fixed_name_object, another_object, string_array,
 
 auto json_struct_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
 
    obj_t obj;
 
@@ -1157,7 +1160,7 @@ bool on_demand::read_in_order(obj_t& obj, const simdjson::padded_string &json) {
 
 auto simdjson_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    std::string minified = buffer;
    
    size_t new_length{}; // It will receive the minified length.
@@ -1461,7 +1464,7 @@ auto rapidjson_write(const obj_t& obj, std::string& buffer){
 
 auto rapidjson_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    
@@ -1675,7 +1678,7 @@ bool yyjson_write_json(obj_t const& obj, std::string& json, yyjson_alc* alc)
 
 auto yyjson_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
 
    auto alc = yyjson_alc_dyn_new();
 
@@ -1870,7 +1873,7 @@ void qtjson_write(const obj_t& obj, QByteArray& buffer)
 
 results qtjson_test()
 {
-    QByteArray buffer { json0.data(), json0.size() };
+    QByteArray buffer { json_minified.data(), json_minified.size() };
 
     obj_t obj;
 
@@ -1923,7 +1926,7 @@ results qtjson_test()
 
 auto boost_json_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
 
    obj_t obj;
 
@@ -1994,7 +1997,7 @@ auto boost_json_test()
 
 auto boost_json_test2()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
 
    obj_t obj;
 
@@ -2067,7 +2070,8 @@ static constexpr std::string_view table_header_read = R"(
 void test0()
 {
    std::vector<results> results;
-   results.emplace_back(glaze_test());
+   //results.emplace_back(glaze_test<glz::opts{.minified = true}>());
+   results.emplace_back(glaze_test<glz::opts{}>());
    results.emplace_back(simdjson_test());
    results.emplace_back(jsonifier_test());
    results.emplace_back(yyjson_test());
@@ -2081,7 +2085,7 @@ void test0()
    results.emplace_back(qtjson_test());
 #endif
    
-   std::ofstream table{ "json_stats0.md" };
+   std::ofstream table{ "json_minfied_stats.md" };
    if (table) {
       const auto n = results.size();
       table << table_header << '\n';
