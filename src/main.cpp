@@ -564,7 +564,7 @@ auto glaze_abc_test()
 auto jsonifier_test()
 {
     jsonifier::jsonifier_core parser{};
-    std::string buffer{ json0 };
+    std::string buffer{ json_minified };
 
     obj_t obj;
 
