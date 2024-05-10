@@ -572,7 +572,7 @@ auto jsonifier_test()
 
     try {
         for (size_t i = 0; i < iterations; ++i) {
-            parser.parseJson(obj, buffer);
+            parser.parseJson < jsonifier::parse_options{ .minified = true } > (obj, buffer);
             parser.serializeJson(obj, buffer);
         }
     }
@@ -608,7 +608,7 @@ auto jsonifier_test()
     t0 = std::chrono::steady_clock::now();
 
     for (size_t i = 0; i < iterations; ++i) {
-        parser.parseJson<true>(obj, buffer);
+        parser.parseJson < jsonifier::parse_options{ .minified = true } > (obj, buffer);
     }
 
     t1 = std::chrono::steady_clock::now();
@@ -639,7 +639,7 @@ auto jsonifier_abc_test()
     auto t0 = std::chrono::steady_clock::now();
 
     for (size_t i = 0; i < iterations_abc; ++i) {
-        parser.parseJson<true>(obj, buffer);
+        parser.parseJson < jsonifier::parse_options{ .minified = true } > (obj, buffer);
     }
 
     auto t1 = std::chrono::steady_clock::now();
