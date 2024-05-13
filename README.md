@@ -1,18 +1,19 @@
 # json_performance
 Performance profiling of JSON libraries
 
-Latest results (April 22, 2024):
+Latest results (May 13, 2024):
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.20**           | **1064**     | **1175**    |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1201**    |
-| [**yyjson**](https://github.com/ibireme/yyjson)              | **1.23**           | **996**      | **1108**    |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.90**           | **370**      | **554**     |
-| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.63**           | **295**      | **447**     |
-| [**Boost.JSON (direct)**](https://boost.org/libs/json)       | **4.66**           | **203**      | **437**     |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **5.47**           | **184**      | **331**     |
-| [**nlohmann**](https://github.com/nlohmann/json)             | **15.00**          | **86**       | **82**      |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.25**           | **1058**     | **1096**    |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1198**    |
+| [**jsonifier**](https://github.com/realtimechris/jsonifier)  | **1.55**           | **1019**     | **730**     |
+| [**yyjson**](https://github.com/ibireme/yyjson)              | **1.22**           | **1001**     | **1111**    |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.95**           | **362**      | **552**     |
+| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.68**           | **287**      | **441**     |
+| [**Boost.JSON (direct)**](https://boost.org/libs/json)       | **4.77**           | **201**      | **442**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **5.49**           | **182**      | **330**     |
+| [**nlohmann**](https://github.com/nlohmann/json)             | **15.12**          | **87**       | **82**      |
 
 >  1,000,000 iterations on a single core (MacBook Pro M1) - Compiled with Clang 15
 
@@ -68,5 +69,6 @@ Hash based solutions avoid this problem and do not suffer performance loss as th
 
 | Library                                                      | Read (MB/s) |
 | ------------------------------------------------------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1426**    |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **108**     |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1292**    |
+| [**jsonifier**](https://github.com/RealTimeChris/Jsonifier)  | **838**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **109**     |
