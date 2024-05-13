@@ -41,6 +41,7 @@ constexpr std::string_view json_minified = R"({"fixed_object":{"int_array":[0,1,
 #include <iostream>
 #include <unordered_map>
 
+#include <jsonifier/Index.hpp>
 #include "fmt/format.h"
 #include "boost/describe/class.hpp"
 
@@ -155,6 +156,64 @@ struct glz::meta<obj_t> {
    );
 };
 
+template <>
+struct jsonifier::core<fixed_object_t> {
+    using T = fixed_object_t;
+    static constexpr auto parseValue = createValue<
+        &T::int_array,
+        &T::float_array,
+        &T::double_array
+    >();
+};
+
+template <>
+struct jsonifier::core<fixed_name_object_t> {
+    using T = fixed_name_object_t;
+    static constexpr auto parseValue = createValue<
+        &T::name0,
+        &T::name1,
+        &T::name2,
+        &T::name3,
+        &T::name4
+    >();
+};
+
+template <>
+struct jsonifier::core<nested_object_t> {
+    using T = nested_object_t;
+    static constexpr auto parseValue = createValue<
+        &T::v3s,
+        &T::id
+    >();
+};
+
+template <>
+struct jsonifier::core<another_object_t> {
+    using T = another_object_t;
+    static constexpr auto parseValue = createValue<
+        &T::string,
+        &T::another_string,
+        &T::escaped_text,
+        &T::boolean,
+        &T::nested_object
+    >();
+};
+
+template <>
+struct jsonifier::core<obj_t> {
+    using T = obj_t;
+    static constexpr auto parseValue = createValue<
+        &T::fixed_object,
+        &T::fixed_name_object,
+        &T::another_object,
+        &T::string_array,
+        &T::string,
+        &T::number,
+        &T::boolean,
+        &T::another_bool
+    >();
+};
+
 // for testing large, flat documents and out of sequence reading
 template <bool backward>
 struct abc_t
@@ -195,6 +254,22 @@ struct glz::meta<abc_t<true>>
    using T = abc_t<true>;
    static constexpr auto value = object(&T::z,&T::y,&T::x,&T::w,&T::v,&T::u,&T::t,&T::s,&T::r,&T::q,&T::p,&T::o,&T::n,
                                         &T::m,&T::l,&T::k,&T::j,&T::i,&T::h,&T::g,&T::f,&T::e,&T::d,&T::c,&T::b,&T::a);
+};
+
+template <>
+struct jsonifier::core<abc_t<false>>
+{
+    using T = abc_t<false>;
+    static constexpr auto parseValue = createValue<&T::a, &T::b, &T::c, &T::d, &T::e, &T::f, &T::g, &T::h, &T::i, &T::j, &T::k, &T::l, &T::m, &T::n,
+        &T::o, &T::p, &T::q, &T::r, &T::s, &T::t, &T::u, &T::v, &T::w, &T::x, &T::y, &T::z>();
+};
+
+template <>
+struct jsonifier::core<abc_t<true>>
+{
+    using T = abc_t<true>;
+    static constexpr auto parseValue = createValue<&T::z, &T::y, &T::x, &T::w, &T::v, &T::u, &T::t, &T::s, &T::r, &T::q, &T::p, &T::o, &T::n,
+        &T::m, &T::l, &T::k, &T::j, &T::i, &T::h, &T::g, &T::f, &T::e, &T::d, &T::c, &T::b, &T::a>();
 };
 
 #ifdef NDEBUG
@@ -484,6 +559,101 @@ auto glaze_abc_test()
    r.print(false);
    
    return r;
+}
+
+auto jsonifier_test()
+{
+    jsonifier::jsonifier_core parser{};
+    std::string buffer{ json_minified };
+
+    obj_t obj;
+
+    auto t0 = std::chrono::steady_clock::now();
+
+    try {
+        for (size_t i = 0; i < iterations; ++i) {
+            parser.parseJson < jsonifier::parse_options{ .minified = true } > (obj, buffer);
+            parser.serializeJson(obj, buffer);
+        }
+    }
+    catch (const std::exception& e) {
+        std::cout << "jsonifier error: " << e.what() << '\n';
+    }
+
+    auto t1 = std::chrono::steady_clock::now();
+
+    for (auto& value : parser.getErrors()) {
+        std::cout << "Jsonifier Error: " << value.reportError() << std::endl;
+    }
+
+    results r{ "jsonifier", "https://github.com/realtimechris/jsonifier", iterations };
+    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+    // write performance
+    t0 = std::chrono::steady_clock::now();
+
+    for (size_t i = 0; i < iterations; ++i) {
+        parser.serializeJson(obj, buffer);
+    }
+
+    t1 = std::chrono::steady_clock::now();
+
+    r.json_byte_length = buffer.size();
+    minified_byte_length = *r.json_byte_length;
+    r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+    is_valid_write<obj_t>(buffer, "jsonifier");
+    // read performance
+
+    t0 = std::chrono::steady_clock::now();
+
+    for (size_t i = 0; i < iterations; ++i) {
+        parser.parseJson < jsonifier::parse_options{ .minified = true } > (obj, buffer);
+    }
+
+    t1 = std::chrono::steady_clock::now();
+
+    for (auto& value : parser.getErrors()) {
+        std::cout << "Jsonifier Error: " << value.reportError() << std::endl;
+    }
+
+    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+    r.print();
+
+    return r;
+}
+
+auto jsonifier_abc_test()
+{
+    std::string buffer{};
+
+    results r{ "jsonifier", "https://github.com/RealTimeChris/Jsonifier", iterations_abc };
+
+    jsonifier::jsonifier_core parser{};
+    parser.serializeJson(abc_t<true>{}, buffer);
+    // read performance
+
+    abc_t<false> obj{};
+
+    auto t0 = std::chrono::steady_clock::now();
+
+    for (size_t i = 0; i < iterations_abc; ++i) {
+        parser.parseJson < jsonifier::parse_options{ .minified = true } > (obj, buffer);
+    }
+
+    auto t1 = std::chrono::steady_clock::now();
+
+    for (auto& value : parser.getErrors()) {
+        std::cout << "Jsonifier Error: " << value.reportError() << std::endl;
+    }
+
+    r.json_byte_length = buffer.size();
+    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+    r.print(false);
+
+    return r;
 }
 
 #include <daw/json/daw_json_link.h>
@@ -1903,6 +2073,7 @@ void test0()
    //results.emplace_back(glaze_test<glz::opts{.minified = true}>());
    results.emplace_back(glaze_test<glz::opts{}>());
    results.emplace_back(simdjson_test());
+   results.emplace_back(jsonifier_test());
    results.emplace_back(yyjson_test());
    results.emplace_back(daw_json_link_test());
    results.emplace_back(rapidjson_test());
@@ -1931,6 +2102,7 @@ void abc_test()
 {
    std::vector<results> results;
    results.emplace_back(glaze_abc_test());
+   results.emplace_back(jsonifier_abc_test());
    //results.emplace_back(daw_json_link_abc_test());
    results.emplace_back(simdjson_abc_test());
    
