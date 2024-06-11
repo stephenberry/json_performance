@@ -325,14 +325,12 @@ inline bool is_valid_write(const std::string& buffer, const std::string& library
    
    glz::ex::read_json(obj, json_minified);
    
-   std::string reference{}; // reference to compare again
-   glz::write_json(obj, reference);
+   std::string reference = glz::write_json(obj).value();
    
    obj = {};
    glz::ex::read_json(obj, buffer);
    
-   std::string compare{};
-   glz::write_json(obj, compare);
+   std::string compare = glz::write_json(obj).value();
    
    if (reference != compare) {
       std::cout << "Invalid write for library: " << library_name << std::endl;
@@ -351,16 +349,15 @@ auto glaze_test()
    
    auto t0 = std::chrono::steady_clock::now();
    
-   try {
-      for (size_t i = 0; i < iterations; ++i) {
-         if (glz::read<Opts>(obj, buffer)) {
-            std::cout << "glaze error!\n";
-            break;
-         }
-         glz::write_json(obj, buffer);
+   for (size_t i = 0; i < iterations; ++i) {
+      if (glz::read<Opts>(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
       }
-   } catch (const std::exception& e) {
-      std::cout << "glaze error: " << e.what() << '\n';
+      if (glz::write_json(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    auto t1 = std::chrono::steady_clock::now();
@@ -372,7 +369,10 @@ auto glaze_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      glz::write<Opts>(obj, buffer);
+      if (glz::write<Opts>(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -402,12 +402,11 @@ auto glaze_test()
    
    t0 = std::chrono::steady_clock::now();
    
-   try {
-      for (size_t i = 0; i < iterations; ++i) {
-         glz::write_binary(obj, buffer);
+   for (size_t i = 0; i < iterations; ++i) {
+      if (glz::write_binary(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
       }
-   } catch (const std::exception& e) {
-      std::cout << "glaze binary error: " << e.what() << '\n';
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -419,15 +418,11 @@ auto glaze_test()
    
    t0 = std::chrono::steady_clock::now();
    
-   try {
-      for (size_t i = 0; i < iterations; ++i) {
-         if (glz::read_binary(obj, buffer)) {
-            std::cout << "glaze error!\n";
-            break;
-         }
+   for (size_t i = 0; i < iterations; ++i) {
+      if (glz::read_binary(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
       }
-   } catch (const std::exception& e) {
-      std::cout << "glaze binary error: " << e.what() << '\n';
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -443,7 +438,10 @@ auto glaze_test()
          std::cout << "glaze error!\n";
          break;
       }
-      glz::write_binary(obj, buffer);
+      if (glz::write_binary(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -457,11 +455,9 @@ auto glaze_test()
 
 auto glaze_abc_test()
 {
-   std::string buffer{};
+   std::string buffer = glz::write_json(abc_t<true>{}).value();
    
    results r{ "Glaze", "https://github.com/stephenberry/glaze", iterations_abc };
-   
-   glz::write_json(abc_t<true>{}, buffer);
    
    // read performance
    
@@ -667,7 +663,7 @@ struct daw::json::json_data_contract<abc_t<false>> {
 
 auto daw_json_link_abc_test()
 {
-   std::string buffer = glz::write_json(abc_t<true>{});
+   std::string buffer = glz::write_json(abc_t<true>{}).value();
    
    abc_t<false> obj{};
    
@@ -1054,7 +1050,7 @@ bool on_demand_abc::read(abc_t<false>& obj, const simdjson::padded_string &json)
 
 auto simdjson_abc_test()
 {
-   std::string buffer = glz::write_json(abc_t<true>{});
+   std::string buffer = glz::write_json(abc_t<true>{}).value();
    std::string minified = buffer;
    
    abc_t<false> obj{};
