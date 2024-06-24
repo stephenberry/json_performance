@@ -28,13 +28,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(glaze)
 
 FetchContent_Declare(
-	Jsonifier
-	GIT_REPOSITORY https://github.com/RealTimeChris/Jsonifier.git
-	GIT_TAG dev
-)
-FetchContent_MakeAvailable(Jsonifier)
-
-FetchContent_Declare(
         rapidjson
         URL https://github.com/Tencent/rapidjson/archive/refs/tags/v1.1.0.tar.gz
 )
@@ -108,7 +101,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_
 
 find_package(Qt5 COMPONENTS Core)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt Boost::json Jsonifier::Jsonifier)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt Boost::json)
 
 if (Qt5_FOUND)
   target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_QT=1)
