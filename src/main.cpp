@@ -41,7 +41,7 @@ constexpr std::string_view json_minified = R"({"fixed_object":{"int_array":[0,1,
 #include <iostream>
 #include <unordered_map>
 
-#include "fmt/format.h"
+#include <format>
 #include "boost/describe/class.hpp"
 
 struct fixed_object_t
@@ -291,17 +291,17 @@ struct results
    
    std::string json_stats(bool use_minified = true) const {
       static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** | **{}** | **{}** |)";
-      const std::string roundtrip = json_roundtrip ? fmt::format("{:.2f}", *json_roundtrip) : "N/A";
+      const std::string roundtrip = json_roundtrip ? std::format("{:.2f}", *json_roundtrip) : "N/A";
       if (json_byte_length) {
          const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
-         const std::string write = json_write ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_write * 1048576))) : "N/A";
-         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
-         return fmt::format(s, name, url, roundtrip, write, read);
+         const std::string write = json_write ? std::format("{}", static_cast<size_t>(iterations * byte_length / (*json_write * 1048576))) : "N/A";
+         const std::string read = json_read ? std::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
+         return std::format(s, name, url, roundtrip, write, read);
       }
       else {
-         const std::string write = json_write ? fmt::format("{:.2f}", *json_write)  : "N/A";
-         const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
-         return fmt::format(s, name, url, roundtrip, write, read);
+         const std::string write = json_write ? std::format("{:.2f}", *json_write)  : "N/A";
+         const std::string read = json_read ? std::format("{:.2f}", *json_read)  : "N/A";
+         return std::format(s, name, url, roundtrip, write, read);
       }
    }
    
@@ -309,12 +309,12 @@ struct results
       static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** |)";
       if (json_byte_length) {
          const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
-         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
-         return fmt::format(s, name, url, read);
+         const std::string read = json_read ? std::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
+         return std::format(s, name, url, read);
       }
       else {
-         const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
-         return fmt::format(s, name, url, read);
+         const std::string read = json_read ? std::format("{:.2f}", *json_read)  : "N/A";
+         return std::format(s, name, url, read);
       }
    }
 };

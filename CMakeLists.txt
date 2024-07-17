@@ -37,17 +37,8 @@ if(NOT rapidjson_POPULATED)
 endif()
 
 FetchContent_Declare(
-        jsoncons
-        URL https://github.com/danielaparker/jsoncons/archive/refs/tags/v0.170.0.tar.gz
-)
-FetchContent_GetProperties(jsoncons)
-if(NOT jsoncons_POPULATED)
-    FetchContent_Populate(jsoncons)
-endif()
-
-FetchContent_Declare(
   daw_json_link
-  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.24.0.tar.gz
+  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.24.1.tar.gz
 )
 FetchContent_MakeAvailable(daw_json_link)
 
@@ -71,20 +62,10 @@ FetchContent_MakeAvailable(simdjson)
 FetchContent_Declare(
         yyjson
         SYSTEM TRUE
-        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.9.0.tar.gz
+        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.10.0.tar.gz
 )
 
 FetchContent_MakeAvailable(yyjson)
-
-FetchContent_Declare(
-        fmt
-        SYSTEM TRUE
-        GIT_TAG 9.1.0
-        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-        GIT_SHALLOW TRUE
-)
-
-FetchContent_MakeAvailable(fmt)
 
 FetchContent_Declare(
         boost
@@ -101,7 +82,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_
 
 find_package(Qt5 COMPONENTS Core)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt Boost::json)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson Boost::json)
 
 if (Qt5_FOUND)
   target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_QT=1)
