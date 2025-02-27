@@ -38,7 +38,7 @@ endif()
 
 FetchContent_Declare(
   daw_json_link
-  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.24.1.tar.gz
+  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.30.2.tar.gz
 )
 FetchContent_MakeAvailable(daw_json_link)
 
