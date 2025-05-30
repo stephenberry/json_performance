@@ -16,7 +16,7 @@ include(FetchContent)
 
 #Set(FETCHCONTENT_QUIET FALSE)
 
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.2/json.tar.xz)
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz)
 FetchContent_MakeAvailable(json)
 
 FetchContent_Declare(
@@ -26,9 +26,6 @@ FetchContent_Declare(
   GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(glaze)
-
-#FetchContent_Declare(glaze URL https://github.com/stephenberry/glaze/archive/refs/tags/v1.1.2.tar.gz)
-#FetchContent_MakeAvailable(glaze)
 
 FetchContent_Declare(
         rapidjson
@@ -40,17 +37,8 @@ if(NOT rapidjson_POPULATED)
 endif()
 
 FetchContent_Declare(
-        jsoncons
-        URL https://github.com/danielaparker/jsoncons/archive/refs/tags/v0.170.0.tar.gz
-)
-FetchContent_GetProperties(jsoncons)
-if(NOT jsoncons_POPULATED)
-    FetchContent_Populate(jsoncons)
-endif()
-
-FetchContent_Declare(
   daw_json_link
-  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.23.0.tar.gz
+  URL https://github.com/beached/daw_json_link/archive/refs/tags/v3.30.2.tar.gz
 )
 FetchContent_MakeAvailable(daw_json_link)
 
@@ -64,7 +52,8 @@ FetchContent_MakeAvailable(json_struct)
 
 FetchContent_Declare(
   simdjson
-  URL https://github.com/simdjson/simdjson/archive/refs/tags/v3.6.0.tar.gz)
+  URL https://github.com/simdjson/simdjson/archive/refs/tags/v3.12.3.tar.gz
+)
 
 set(SIMDJSON_JUST_LIBRARY ON CACHE INTERNAL "")
 set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
@@ -74,7 +63,7 @@ FetchContent_MakeAvailable(simdjson)
 FetchContent_Declare(
         yyjson
         SYSTEM TRUE
-        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.8.0.tar.gz
+        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.11.1.tar.gz
 )
 
 FetchContent_MakeAvailable(yyjson)
@@ -100,7 +89,7 @@ FetchContent_MakeAvailable(fmt)
 
 FetchContent_Declare(
         boost
-        URL https://github.com/boostorg/boost/releases/download/boost-1.83.0/boost-1.83.0.tar.xz
+        URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
 )
 
 set(BOOST_INCLUDE_LIBRARIES json)

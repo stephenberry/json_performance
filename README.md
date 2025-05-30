@@ -1,22 +1,24 @@
 # json_performance
 Performance profiling of JSON libraries
 
-Latest results (November 28, 2023):
+Latest results (August 9, 2024):
 
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.21**           | **988**      | **1016**    |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1134**    |
-| [**yyjson**](https://github.com/ibireme/yyjson)              | **1.45**           | **731**      | **941**     |
-| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.73**           | **360**      | **547**     |
-| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.50**           | **271**      | **445**     |
-| [**json_struct**](https://github.com/jorgen/json_struct)     | **5.31**           | **167**      | **330**     |
-| [**Boost.JSON**](https://boost.org/libs/json)                | **5.28**           | **182**      | **276**     |
-| [**nlohmann**](https://github.com/nlohmann/json)             | **14.66**          | **83**       | **81**      |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **1.04**           | **1366**     | **1224**    |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **N/A**            | **N/A**      | **1198**    |
+| [**yyjson**](https://github.com/ibireme/yyjson)              | **1.23**           | **1005**     | **1107**    |
+| [**daw_json_link**](https://github.com/beached/daw_json_link) | **2.93**           | **365**      | **553**     |
+| [**RapidJSON**](https://github.com/Tencent/rapidjson)        | **3.65**           | **290**      | **450**     |
+| [**Boost.JSON (direct)**](https://boost.org/libs/json)       | **4.76**           | **199**      | **447**     |
+| [**json_struct**](https://github.com/jorgen/json_struct)     | **5.50**           | **182**      | **326**     |
+| [**nlohmann**](https://github.com/nlohmann/json)             | **15.71**          | **84**       | **80**      |
 
 >  1,000,000 iterations on a single core (MacBook Pro M1) - Compiled with Clang 15
 
-*Note: [simdjson](https://github.com/simdjson/simdjson) is great, but can experience major performance losses when the data is not in the expected sequence or any keys are missing (the problem grows as the file size increases, as it must re-iterate through the document). And for large, nested objects, simdjson typically requires significantly more coding from the user.*
+*Performance caveats: [simdjson](https://github.com/simdjson/simdjson) and [yyjson](https://github.com/ibireme/yyjson) are great, but they experience major performance losses when the data is not in the expected sequence or any keys are missing (the problem grows as the file size increases, as they must re-iterate through the document).*
+
+*Also, [simdjson](https://github.com/simdjson/simdjson) and [yyjson](https://github.com/ibireme/yyjson) do not support automatic escaped string handling, so if any of the currently non-escaped strings in this benchmark were to contain an escape, the escapes would not be handled.*
 
 *Note: [daw_json_link](https://github.com/beached/daw_json_link) does not easily support reading with missing keys. So, the code is not tested with this functionality like the rest of the libraries. If missing keys are expected daw_json_link suffers significant performance losses.*
 
@@ -39,6 +41,7 @@ Test object (minified for test):
    "another_object": {
       "string": "here is some text",
       "another_string": "Hello World",
+      "escaped_text": "{\"some key\":\"some string value\"}",
       "boolean": false,
       "nested_object": {
          "v3s": [[0.12345, 0.23456, 0.001345],
@@ -65,5 +68,5 @@ Hash based solutions avoid this problem and do not suffer performance loss as th
 
 | Library                                                      | Read (MB/s) |
 | ------------------------------------------------------------ | ----------- |
-| [**Glaze**](https://github.com/stephenberry/glaze)           | **640**     |
-| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **110**     |
+| [**Glaze**](https://github.com/stephenberry/glaze)           | **678**     |
+| [**simdjson (on demand)**](https://github.com/simdjson/simdjson) | **93**      |

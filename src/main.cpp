@@ -1,8 +1,7 @@
 #include "glaze/glaze.hpp"
 #include "glaze/glaze_exceptions.hpp"
-#include "glaze/core/macros.hpp"
 
-static constexpr std::string_view json0 = R"(
+[[maybe_unused]] constexpr std::string_view json_whitespace = R"(
 {
    "fixed_object": {
       "int_array": [0, 1, 2, 3, 4, 5, 6],
@@ -19,6 +18,7 @@ static constexpr std::string_view json0 = R"(
    "another_object": {
       "string": "here is some text",
       "another_string": "Hello World",
+      "escaped_text": "{\"some key\":\"some string value\"}",
       "boolean": false,
       "nested_object": {
          "v3s": [[0.12345, 0.23456, 0.001345],
@@ -35,11 +35,13 @@ static constexpr std::string_view json0 = R"(
 }
 )";
 
+constexpr std::string_view json_minified = R"({"fixed_object":{"int_array":[0,1,2,3,4,5,6],"float_array":[0.1,0.2,0.3,0.4,0.5,0.6],"double_array":[3288398.238,2.33e+24,28.9,0.928759872,0.22222848,0.1,0.2,0.3,0.4]},"fixed_name_object":{"name0":"James","name1":"Abraham","name2":"Susan","name3":"Frank","name4":"Alicia"},"another_object":{"string":"here is some text","another_string":"Hello World","escaped_text":"{\"some key\":\"some string value\"}","boolean":false,"nested_object":{"v3s":[[0.12345,0.23456,0.001345],[0.3894675,97.39827,297.92387],[18.18,87.289,2988.298]],"id":"298728949872"}},"string_array":["Cat","Dog","Elephant","Tiger"],"string":"Hello world","number":3.14,"boolean":true,"another_bool":false})";
+
 #include <chrono>
 #include <iostream>
 #include <unordered_map>
 
-#include "fmt/format.h"
+#include <format>
 #include "boost/describe/class.hpp"
 
 struct fixed_object_t
@@ -74,11 +76,12 @@ struct another_object_t
 {
    std::string string{};
    std::string another_string{};
+   std::string escaped_text{};
    bool boolean{};
    nested_object_t nested_object{};
 };
 
-BOOST_DESCRIBE_STRUCT(another_object_t, (), (string, another_string, boolean, nested_object))
+BOOST_DESCRIBE_STRUCT(another_object_t, (), (string, another_string, escaped_text, boolean, nested_object))
 
 struct obj_t
 {
@@ -131,6 +134,7 @@ struct glz::meta<another_object_t> {
    static constexpr auto value = object(
       &T::string,
       &T::another_string,
+      &T::escaped_text,
       &T::boolean,
       &T::nested_object
    );
@@ -177,8 +181,21 @@ struct abc_t
    }
 };
 
-GLZ_META(abc_t<false>, a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z);
-GLZ_META(abc_t<true>, z,y,x,w,v,u,t,s,r,q,p,o,n,m,l,k,j,i,h,g,f,e,d,c,b,a);
+template <>
+struct glz::meta<abc_t<false>>
+{
+   using T = abc_t<false>;
+   static constexpr auto value = object(&T::a,&T::b,&T::c,&T::d,&T::e,&T::f,&T::g,&T::h,&T::i,&T::j,&T::k,&T::l,&T::m,&T::n,
+                                        &T::o,&T::p,&T::q,&T::r,&T::s,&T::t,&T::u,&T::v,&T::w,&T::x,&T::y,&T::z);
+};
+
+template <>
+struct glz::meta<abc_t<true>>
+{
+   using T = abc_t<true>;
+   static constexpr auto value = object(&T::z,&T::y,&T::x,&T::w,&T::v,&T::u,&T::t,&T::s,&T::r,&T::q,&T::p,&T::o,&T::n,
+                                        &T::m,&T::l,&T::k,&T::j,&T::i,&T::h,&T::g,&T::f,&T::e,&T::d,&T::c,&T::b,&T::a);
+};
 
 #ifdef NDEBUG
 static constexpr size_t iterations = 1'000'000;
@@ -274,17 +291,17 @@ struct results
    
    std::string json_stats(bool use_minified = true) const {
       static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** | **{}** | **{}** |)";
-      const std::string roundtrip = json_roundtrip ? fmt::format("{:.2f}", *json_roundtrip) : "N/A";
+      const std::string roundtrip = json_roundtrip ? std::format("{:.2f}", *json_roundtrip) : "N/A";
       if (json_byte_length) {
          const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
-         const std::string write = json_write ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_write * 1048576))) : "N/A";
-         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
-         return fmt::format(s, name, url, roundtrip, write, read);
+         const std::string write = json_write ? std::format("{}", static_cast<size_t>(iterations * byte_length / (*json_write * 1048576))) : "N/A";
+         const std::string read = json_read ? std::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
+         return std::format(s, name, url, roundtrip, write, read);
       }
       else {
-         const std::string write = json_write ? fmt::format("{:.2f}", *json_write)  : "N/A";
-         const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
-         return fmt::format(s, name, url, roundtrip, write, read);
+         const std::string write = json_write ? std::format("{:.2f}", *json_write)  : "N/A";
+         const std::string read = json_read ? std::format("{:.2f}", *json_read)  : "N/A";
+         return std::format(s, name, url, roundtrip, write, read);
       }
    }
    
@@ -292,12 +309,12 @@ struct results
       static constexpr std::string_view s = R"(| [**{}**]({}) | **{}** |)";
       if (json_byte_length) {
          const auto byte_length = use_minified ? minified_byte_length : *json_byte_length;
-         const std::string read = json_read ? fmt::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
-         return fmt::format(s, name, url, read);
+         const std::string read = json_read ? std::format("{}", static_cast<size_t>(iterations * byte_length / (*json_read * 1048576)))  : "N/A";
+         return std::format(s, name, url, read);
       }
       else {
-         const std::string read = json_read ? fmt::format("{:.2f}", *json_read)  : "N/A";
-         return fmt::format(s, name, url, read);
+         const std::string read = json_read ? std::format("{:.2f}", *json_read)  : "N/A";
+         return std::format(s, name, url, read);
       }
    }
 };
@@ -306,16 +323,14 @@ template <class T>
 inline bool is_valid_write(const std::string& buffer, const std::string& library_name) {
    T obj{};
    
-   glz::ex::read_json(obj, json0);
+   glz::ex::read_json(obj, json_minified);
    
-   std::string reference{}; // reference to compare again
-   glz::write_json(obj, reference);
+   std::string reference = glz::write_json(obj).value();
    
    obj = {};
    glz::ex::read_json(obj, buffer);
    
-   std::string compare{};
-   glz::write_json(obj, compare);
+   std::string compare = glz::write_json(obj).value();
    
    if (reference != compare) {
       std::cout << "Invalid write for library: " << library_name << std::endl;
@@ -325,36 +340,39 @@ inline bool is_valid_write(const std::string& buffer, const std::string& library
    return true;
 }
 
+template <glz::opts Opts>
 auto glaze_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    
    auto t0 = std::chrono::steady_clock::now();
    
-   try {
-      for (size_t i = 0; i < iterations; ++i) {
-         if (glz::read_json(obj, buffer)) {
-            std::cout << "glaze error!\n";
-            break;
-         }
-         glz::write_json(obj, buffer);
+   for (size_t i = 0; i < iterations; ++i) {
+      if (glz::read<Opts>(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
       }
-   } catch (const std::exception& e) {
-      std::cout << "glaze error: " << e.what() << '\n';
+      if (glz::write_json(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    auto t1 = std::chrono::steady_clock::now();
    
-   results r{ "Glaze", "https://github.com/stephenberry/glaze", iterations };
+   results r{ Opts.minified ? "Glaze (.minified)" : "Glaze", "https://github.com/stephenberry/glaze", iterations };
    r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
    
    // write performance
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      glz::write_json(obj, buffer);
+      if (glz::write<Opts>(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -384,12 +402,11 @@ auto glaze_test()
    
    t0 = std::chrono::steady_clock::now();
    
-   try {
-      for (size_t i = 0; i < iterations; ++i) {
-         glz::write_binary(obj, buffer);
+   for (size_t i = 0; i < iterations; ++i) {
+      if (glz::write_beve(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
       }
-   } catch (const std::exception& e) {
-      std::cout << "glaze binary error: " << e.what() << '\n';
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -401,15 +418,11 @@ auto glaze_test()
    
    t0 = std::chrono::steady_clock::now();
    
-   try {
-      for (size_t i = 0; i < iterations; ++i) {
-         if (glz::read_binary(obj, buffer)) {
-            std::cout << "glaze error!\n";
-            break;
-         }
+   for (size_t i = 0; i < iterations; ++i) {
+      if (glz::read_beve(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
       }
-   } catch (const std::exception& e) {
-      std::cout << "glaze binary error: " << e.what() << '\n';
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -421,11 +434,14 @@ auto glaze_test()
    t0 = std::chrono::steady_clock::now();
    
    for (size_t i = 0; i < iterations; ++i) {
-      if (glz::read_binary(obj, buffer)) {
+      if (glz::read_beve(obj, buffer)) {
          std::cout << "glaze error!\n";
          break;
       }
-      glz::write_binary(obj, buffer);
+      if (glz::write_beve(obj, buffer)) {
+         std::cout << "glaze error!\n";
+         break;
+      }
    }
    
    t1 = std::chrono::steady_clock::now();
@@ -439,11 +455,9 @@ auto glaze_test()
 
 auto glaze_abc_test()
 {
-   std::string buffer{};
+   std::string buffer = glz::write_json(abc_t<true>{}).value();
    
    results r{ "Glaze", "https://github.com/stephenberry/glaze", iterations_abc };
-   
-   glz::write_json(abc_t<true>{}, buffer);
    
    // read performance
    
@@ -508,11 +522,12 @@ template<>
 struct daw::json::json_data_contract<another_object_t> {
   using type = json_member_list<json_string<"string", std::string>,
    json_string<"another_string", std::string>,
+   json_string<"escaped_text", std::string>,
    json_bool<"boolean", bool>,
    json_class<"nested_object", nested_object_t>>;
    
    static constexpr auto to_json_data( another_object_t const & value ) {
-         return std::forward_as_tuple( value.string, value.another_string, value.boolean, value.nested_object );
+         return std::forward_as_tuple( value.string, value.another_string, value.escaped_text, value.boolean, value.nested_object );
        }
 };
 
@@ -545,7 +560,7 @@ struct daw::json::json_data_contract<obj_t> {
 
 auto daw_json_link_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    
@@ -648,7 +663,7 @@ struct daw::json::json_data_contract<abc_t<false>> {
 
 auto daw_json_link_abc_test()
 {
-   std::string buffer = glz::write_json(abc_t<true>{});
+   std::string buffer = glz::write_json(abc_t<true>{}).value();
    
    abc_t<false> obj{};
    
@@ -708,12 +723,13 @@ void from_json(const json& j, nested_object_t& v) {
 }
 
 void to_json(json& j, const another_object_t& v) {
-   j = json{{"string", v.string}, {"another_string", v.another_string}, {"boolean", v.boolean}, {"nested_object", v.nested_object}};
+   j = json{{"string", v.string}, {"another_string", v.another_string}, {"escaped_text", v.escaped_text}, {"boolean", v.boolean}, {"nested_object", v.nested_object}};
 }
 
 void from_json(const json& j, another_object_t& v) {
     j.at("string").get_to(v.string);
     j.at("another_string").get_to(v.another_string);
+    j.at("escaped_text").get_to(v.escaped_text);
     j.at("boolean").get_to(v.boolean);
     j.at("nested_object").get_to(v.nested_object);
 }
@@ -735,7 +751,7 @@ void from_json(const json& j, obj_t& v) {
 
 auto nlohmann_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    json j;
@@ -799,12 +815,12 @@ auto nlohmann_test()
 JS_OBJ_EXT(fixed_object_t, int_array, float_array, double_array);
 JS_OBJ_EXT(fixed_name_object_t, name0, name1, name2, name3, name4);
 JS_OBJ_EXT(nested_object_t, v3s, id);
-JS_OBJ_EXT(another_object_t, string, another_string, boolean, nested_object);
+JS_OBJ_EXT(another_object_t, string, another_string, escaped_text, boolean, nested_object);
 JS_OBJ_EXT(obj_t, fixed_object, fixed_name_object, another_object, string_array, string, number, boolean, another_bool);
 
 auto json_struct_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
 
    obj_t obj;
 
@@ -974,6 +990,11 @@ bool on_demand::read_in_order(obj_t& obj, const simdjson::padded_string &json) {
       if (auto another_string = another_object.find_field_unordered("another_string"); another_string.error() == SUCCESS) {
          obj.another_object.another_string = std::string_view(another_string);
       }
+      if (auto another_string = another_object.find_field_unordered("escaped_text"); another_string.error() == SUCCESS) {
+         std::string_view new_string{};
+         std::ignore = another_string.get_string().get(new_string);
+         obj.another_object.escaped_text = new_string;
+      }
       if (auto boolean = another_object.find_field_unordered("boolean"); boolean.error() == SUCCESS) {
          obj.another_object.boolean = bool(boolean);
       }
@@ -1019,7 +1040,7 @@ bool on_demand::read_in_order(obj_t& obj, const simdjson::padded_string &json) {
 
 auto simdjson_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    std::string minified = buffer;
    
    size_t new_length{}; // It will receive the minified length.
@@ -1083,7 +1104,7 @@ bool on_demand_abc::read(abc_t<false>& obj, const simdjson::padded_string &json)
 
 auto simdjson_abc_test()
 {
-   std::string buffer = glz::write_json(abc_t<true>{});
+   std::string buffer = glz::write_json(abc_t<true>{}).value();
    std::string minified = buffer;
    
    abc_t<false> obj{};
@@ -1237,6 +1258,7 @@ void rapid_json_read(const rapidjson::Value& json, another_object_t& obj)
 {
    obj.string = json["string"].GetString();
    obj.another_string = json["another_string"].GetString();
+   obj.escaped_text = json["escaped_text"].GetString();
    obj.boolean = json["boolean"].GetBool();
    rapid_json_read(json["nested_object"], obj.nested_object);
 }
@@ -1249,6 +1271,8 @@ void rapid_json_write(rapidjson::Writer<rapidjson::StringBuffer>& writer, const 
    writer.String(obj.string.c_str(), static_cast<unsigned>(obj.string.size()));
    writer.String("another_string", 14);
    writer.String(obj.another_string.c_str(), static_cast<unsigned>(obj.another_string.size()));
+   writer.String("escaped_text", 12);
+   writer.String(obj.escaped_text.c_str(), static_cast<unsigned>(obj.escaped_text.size()));
    writer.String("boolean", 7);
    writer.Bool(obj.boolean);
    writer.String("nested_object", 13);
@@ -1320,7 +1344,7 @@ auto rapidjson_write(const obj_t& obj, std::string& buffer){
 
 auto rapidjson_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
    
    obj_t obj;
    
@@ -1375,9 +1399,9 @@ auto rapidjson_test()
 
 #include "yyjson.h"
 
-bool yyjson_read_json(obj_t& obj, std::string const& json)
+bool yyjson_read_json(obj_t& obj, std::string const& json, yyjson_alc* alc)
 {
-   auto const doc = yyjson_read(json.c_str(), json.size(), 0);
+   auto const doc = yyjson_read_opts(const_cast<char*>(json.data()), json.size(), 0, alc, nullptr);
    auto const root = yyjson_doc_get_root(doc);
    
    size_t index, array_size;
@@ -1428,6 +1452,7 @@ bool yyjson_read_json(obj_t& obj, std::string const& json)
    {
       obj.another_object.string = to_string_view(yyjson_obj_get(another_object, "string"));
       obj.another_object.another_string = to_string_view(yyjson_obj_get(another_object, "another_string"));
+      obj.another_object.escaped_text = yyjson_get_str(yyjson_obj_get(another_object, "escaped_text"));
       obj.another_object.boolean = yyjson_get_bool(yyjson_obj_get(another_object, "boolean"));
    }
 
@@ -1451,10 +1476,12 @@ bool yyjson_read_json(obj_t& obj, std::string const& json)
    }
 
    auto string_array = yyjson_obj_get(root, "string_array");
-   obj.string_array.resize(yyjson_arr_size(string_array));
-   size_t i = 0;
-   yyjson_arr_foreach(string_array, index, array_size, value) {
-      obj.string_array[i++] = to_string_view(value);
+   if (string_array) {
+      obj.string_array.resize(yyjson_arr_size(string_array));
+      size_t i = 0;
+      yyjson_arr_foreach(string_array, index, array_size, value) {
+         obj.string_array[i++] = to_string_view(value);
+      }
    }
 
    obj.string = to_string_view(yyjson_obj_get(root, "string"));
@@ -1468,11 +1495,13 @@ bool yyjson_read_json(obj_t& obj, std::string const& json)
 }
 
 
-bool yyjson_write_json(obj_t const& obj, std::string& json) 
+bool yyjson_write_json(obj_t const& obj, std::string& json, yyjson_alc* alc) 
 {
-   auto doc = yyjson_mut_doc_new(nullptr);
+   auto doc = yyjson_mut_doc_new(alc);
 
    auto root = yyjson_mut_obj(doc);
+   if (!root) return false;
+   
    yyjson_mut_doc_set_root(doc, root);
 
    auto fixed_object = yyjson_mut_obj(doc);
@@ -1483,16 +1512,17 @@ bool yyjson_write_json(obj_t const& obj, std::string& json)
 
    auto fixed_name_object = yyjson_mut_obj(doc);
    yyjson_mut_obj_add_val(doc, root, "fixed_name_object", fixed_name_object);
-   yyjson_mut_obj_add_str(doc, fixed_name_object, "name0", obj.fixed_name_object.name0.c_str());
-   yyjson_mut_obj_add_str(doc, fixed_name_object, "name1", obj.fixed_name_object.name1.c_str());
-   yyjson_mut_obj_add_str(doc, fixed_name_object, "name2", obj.fixed_name_object.name2.c_str());
-   yyjson_mut_obj_add_str(doc, fixed_name_object, "name3", obj.fixed_name_object.name3.c_str());
-   yyjson_mut_obj_add_str(doc, fixed_name_object, "name4", obj.fixed_name_object.name4.c_str());
+   yyjson_mut_obj_add_strn(doc, fixed_name_object, "name0", obj.fixed_name_object.name0.data(), obj.fixed_name_object.name0.length());
+   yyjson_mut_obj_add_strn(doc, fixed_name_object, "name1", obj.fixed_name_object.name1.data(), obj.fixed_name_object.name1.length());
+   yyjson_mut_obj_add_strn(doc, fixed_name_object, "name2", obj.fixed_name_object.name2.data(), obj.fixed_name_object.name2.length());
+   yyjson_mut_obj_add_strn(doc, fixed_name_object, "name3", obj.fixed_name_object.name3.data(), obj.fixed_name_object.name3.length());
+   yyjson_mut_obj_add_strn(doc, fixed_name_object, "name4", obj.fixed_name_object.name4.data(), obj.fixed_name_object.name4.length());
 
    auto another_object = yyjson_mut_obj(doc);
    yyjson_mut_obj_add_val(doc, root, "another_object", another_object);
-   yyjson_mut_obj_add_str(doc, another_object, "string", obj.another_object.string.c_str());
-   yyjson_mut_obj_add_str(doc, another_object, "another_string", obj.another_object.another_string.c_str());
+   yyjson_mut_obj_add_strn(doc, another_object, "string", obj.another_object.string.data(), obj.another_object.string.length());
+   yyjson_mut_obj_add_strn(doc, another_object, "another_string", obj.another_object.another_string.data(), obj.another_object.another_string.length());
+   yyjson_mut_obj_add_strn(doc, another_object, "escaped_text", obj.another_object.escaped_text.data(), obj.another_object.escaped_text.length());
    yyjson_mut_obj_add_bool(doc, another_object, "boolean", obj.another_object.boolean);
 
    auto nested_object = yyjson_mut_obj(doc);
@@ -1502,23 +1532,24 @@ bool yyjson_write_json(obj_t const& obj, std::string& json)
    for (auto const& v3 : obj.another_object.nested_object.v3s) {
       yyjson_mut_arr_add_val(v3s, yyjson_mut_arr_with_double(doc, v3.data(), v3.size()));
    }
-   yyjson_mut_obj_add_str(doc, nested_object, "id", obj.another_object.nested_object.id.c_str());
+   yyjson_mut_obj_add_strn(doc, nested_object, "id", obj.another_object.nested_object.id.data(), obj.another_object.nested_object.id.length());
 
    auto string_array = yyjson_mut_arr(doc);
    yyjson_mut_obj_add_val(doc, root, "string_array", string_array);
    for (auto const& str : obj.string_array) {
-      yyjson_mut_arr_add_str(doc, string_array, str.c_str());
+      yyjson_mut_arr_add_strn(doc, string_array, str.data(), str.length());
    }
 
-   yyjson_mut_obj_add_str(doc, root, "string", obj.string.c_str());
+   yyjson_mut_obj_add_strn(doc, root, "string", obj.string.data(), obj.string.length());
    yyjson_mut_obj_add_real(doc, root, "number", obj.number);
    yyjson_mut_obj_add_bool(doc, root, "boolean", obj.boolean);
    yyjson_mut_obj_add_bool(doc, root, "another_bool", obj.another_bool);
 
-   auto tmp = yyjson_mut_write(doc, 0, nullptr);
-   json = tmp;
+   size_t tmp_len = 0;
+   auto tmp = yyjson_mut_write_opts(doc, 0, alc, &tmp_len, nullptr);
+   json.assign(tmp, tmp_len);
 
-   free(tmp);
+   alc->free(alc->ctx, tmp);
 
    yyjson_mut_doc_free(doc);
 
@@ -1527,7 +1558,9 @@ bool yyjson_write_json(obj_t const& obj, std::string& json)
 
 auto yyjson_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
+
+   auto alc = yyjson_alc_dyn_new();
 
    obj_t obj;
 
@@ -1535,12 +1568,12 @@ auto yyjson_test()
 
    try {
       for (size_t i = 0; i < iterations; ++i) {
-         yyjson_read_json(obj, buffer);
+         yyjson_read_json(obj, buffer, alc);
          buffer.clear();
-         yyjson_write_json(obj, buffer);
+         yyjson_write_json(obj, buffer, alc);
       }
    } catch (const std::exception& e) {
-      std::cout << "daw_json_link error: " << e.what() << '\n';
+      std::cout << "yyjson error: " << e.what() << '\n';
    }
 
    auto t1 = std::chrono::steady_clock::now();
@@ -1553,7 +1586,7 @@ auto yyjson_test()
    t0 = std::chrono::steady_clock::now();
 
    for (size_t i = 0; i < iterations; ++i) {
-      yyjson_write_json(obj, buffer);
+      yyjson_write_json(obj, buffer, alc);
    }
 
    t1 = std::chrono::steady_clock::now();
@@ -1568,7 +1601,7 @@ auto yyjson_test()
    t0 = std::chrono::steady_clock::now();
 
    for (size_t i = 0; i < iterations; ++i) {
-      yyjson_read_json(obj, buffer);
+      yyjson_read_json(obj, buffer, alc);
    }
 
    t1 = std::chrono::steady_clock::now();
@@ -1576,6 +1609,8 @@ auto yyjson_test()
    r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
 
    r.print();
+
+   yyjson_alc_dyn_free(alc);
 
    return r;
 }
@@ -1617,6 +1652,7 @@ void qtjson_read(obj_t& obj, const QByteArray& buffer)
     auto another_object = jsonObj["another_object"].toObject();
     obj.another_object.string = another_object["string"].toString().toStdString();
     obj.another_object.another_string = another_object["another_string"].toString().toStdString();
+    obj.another_object.escaped_text = another_object["escaped_text"].toString().toStdString();
     obj.another_object.boolean = another_object["boolean"].toBool();
     auto another_object_nested_object = another_object["nested_object"].toObject();
     obj.another_object.nested_object.id = another_object_nested_object["id"].toString().toStdString();
@@ -1682,6 +1718,7 @@ void qtjson_write(const obj_t& obj, QByteArray& buffer)
         QJsonObject another_object;
         another_object["string"] = QString::fromStdString(obj.another_object.string);
         another_object["another_string"] = QString::fromStdString(obj.another_object.another_string);
+        another_object["escaped_text"] = QString::fromStdString(obj.another_object.escaped_text);
         another_object["boolean"] = obj.another_object.boolean;
 
         QJsonObject nested_object;
@@ -1716,7 +1753,7 @@ void qtjson_write(const obj_t& obj, QByteArray& buffer)
 
 results qtjson_test()
 {
-    QByteArray buffer { json0.data(), json0.size() };
+    QByteArray buffer { json_minified.data(), json_minified.size() };
 
     obj_t obj;
 
@@ -1769,7 +1806,7 @@ results qtjson_test()
 
 auto boost_json_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
 
    obj_t obj;
 
@@ -1838,6 +1875,70 @@ auto boost_json_test()
    return r;
 }
 
+auto boost_json_test2()
+{
+   std::string buffer{ json_minified };
+
+   obj_t obj;
+
+   auto t0 = std::chrono::steady_clock::now();
+
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         unsigned char buf[ 4096 ];
+         boost::json::monotonic_resource mr( buf );
+
+         boost::json::parse_into( obj, buffer );
+
+         auto jv2 = boost::json::value_from( obj, &mr );
+         buffer = boost::json::serialize( jv2 );
+      }
+   } catch (const std::exception& e) {
+      std::cout << "Boost.JSON error: " << e.what() << '\n';
+   }
+
+   auto t1 = std::chrono::steady_clock::now();
+
+   results r{ "Boost.JSON (direct)", "https://boost.org/libs/json", iterations };
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // write performance
+   t0 = std::chrono::steady_clock::now();
+
+   for (size_t i = 0; i < iterations; ++i) {
+      unsigned char buf[ 4096 ];
+      boost::json::monotonic_resource mr( buf );
+
+      auto jv2 = boost::json::value_from( obj, &mr );
+      buffer = boost::json::serialize( jv2 );
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   // read performance
+
+   t0 = std::chrono::steady_clock::now();
+
+   try {
+      for (size_t i = 0; i < iterations; ++i) {
+         boost::json::parse_into( obj, buffer );
+      }
+   } catch (const std::exception& e) {
+      std::cout << "Boost.JSON error: " << e.what() << '\n';
+   }
+
+   t1 = std::chrono::steady_clock::now();
+
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+
+   r.print();
+
+   return r;
+}
+
 static constexpr std::string_view table_header = R"(
 | Library                                                      | Roundtrip Time (s) | Write (MB/s) | Read (MB/s) |
 | ------------------------------------------------------------ | ------------------ | ------------ | ----------- |)";
@@ -1862,7 +1963,7 @@ void test0()
    results.emplace_back(qtjson_test());
 #endif
    
-   std::ofstream table{ "json_stats0.md" };
+   std::ofstream table{ "json_minfied_stats.md" };
    if (table) {
       const auto n = results.size();
       table << table_header << '\n';
@@ -1879,6 +1980,7 @@ void abc_test()
 {
    std::vector<results> results;
    results.emplace_back(glaze_abc_test());
+   //results.emplace_back(jsonifier_abc_test());
    //results.emplace_back(daw_json_link_abc_test());
    results.emplace_back(simdjson_abc_test());
    
