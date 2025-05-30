@@ -52,7 +52,8 @@ FetchContent_MakeAvailable(json_struct)
 
 FetchContent_Declare(
   simdjson
-  URL https://github.com/simdjson/simdjson/archive/refs/tags/v3.9.1.tar.gz)
+  URL https://github.com/simdjson/simdjson/archive/refs/tags/v3.12.3.tar.gz
+)
 
 set(SIMDJSON_JUST_LIBRARY ON CACHE INTERNAL "")
 set(SIMDJSON_BUILD_STATIC ON CACHE INTERNAL "")
@@ -62,7 +63,7 @@ FetchContent_MakeAvailable(simdjson)
 FetchContent_Declare(
         yyjson
         SYSTEM TRUE
-        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.10.0.tar.gz
+        URL https://github.com/ibireme/yyjson/archive/refs/tags/0.11.1.tar.gz
 )
 
 FetchContent_MakeAvailable(yyjson)
