@@ -878,6 +878,60 @@ auto json_struct_test()
    return r;
 }
 
+#include <rfl/Variant.hpp>
+#include <rfl/json.hpp>
+#include "rfl.hpp"
+
+auto reflect_cpp_test()
+{
+   std::string buffer{ json_minified };
+
+   obj_t obj;
+
+   auto t0 = std::chrono::steady_clock::now();
+
+   for (size_t i = 0; i < iterations; ++i) {
+      obj = rfl::json::read<obj_t>(buffer).value();
+      buffer = rfl::json::write(obj);
+   }
+   auto t1 = std::chrono::steady_clock::now();
+   
+   results r{ "reflect_cpp", "https://github.com/getml/reflect-cpp", iterations };
+
+   r.json_roundtrip = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   // write performance
+   
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      buffer.clear();
+      buffer = rfl::json::write(obj);
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   r.json_byte_length = buffer.size();
+   r.json_write = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   is_valid_write<obj_t>(buffer, "reflect_cpp");
+   
+   // read performance
+   t0 = std::chrono::steady_clock::now();
+   
+   for (size_t i = 0; i < iterations; ++i) {
+      obj = rfl::json::read<obj_t>(buffer).value();
+   }
+   
+   t1 = std::chrono::steady_clock::now();
+   
+   r.json_read = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count() * 1e-6;
+   
+   r.print();
+   
+   return r;
+}
+
 #include "simdjson.h"
 
 // Note: the on demand parser does not allow multiple instances of the same key with different data specified
@@ -1896,16 +1950,14 @@ static constexpr std::string_view table_header_read = R"(
 void test0()
 {
    std::vector<results> results;
-   //results.emplace_back(glaze_test<glz::opts{.minified = true}>());
    results.emplace_back(glaze_test<glz::opts{}>());
    results.emplace_back(simdjson_test());
-   //results.emplace_back(jsonifier_test());
    results.emplace_back(yyjson_test());
+   results.emplace_back(reflect_cpp_test());
    results.emplace_back(daw_json_link_test());
    results.emplace_back(rapidjson_test());
-   results.emplace_back(boost_json_test2());
    results.emplace_back(json_struct_test());
-   //results.emplace_back(boost_json_test());
+   results.emplace_back(boost_json_test());
    results.emplace_back(nlohmann_test());
 #ifdef HAVE_QT
    results.emplace_back(qtjson_test());
@@ -1928,7 +1980,6 @@ void abc_test()
 {
    std::vector<results> results;
    results.emplace_back(glaze_abc_test());
-   //results.emplace_back(jsonifier_abc_test());
    //results.emplace_back(daw_json_link_abc_test());
    results.emplace_back(simdjson_abc_test());
    

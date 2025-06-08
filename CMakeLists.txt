@@ -6,6 +6,10 @@ project(
   LANGUAGES CXX
 )
 
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if(NOT ${CPM_LOCAL_PACKAGE_PATHS} STREQUAL "")
    include(${CPM_LOCAL_PACKAGE_PATHS})
 endif()
@@ -69,6 +73,25 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(yyjson)
 
 FetchContent_Declare(
+        reflectcpp
+	GIT_REPOSITORY https://github.com/getml/reflect-cpp
+        GIT_TAG v0.19.0
+	GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(reflectcpp)
+
+FetchContent_Declare(
+        fmt
+        SYSTEM TRUE
+        GIT_TAG 9.1.0
+        GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+        GIT_SHALLOW TRUE
+)
+
+FetchContent_MakeAvailable(fmt)
+
+FetchContent_Declare(
         boost
         URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
 )
@@ -79,11 +102,11 @@ FetchContent_MakeAvailable(boost)
 
 add_executable(${PROJECT_NAME} src/main.cpp)
 
-target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_DIR}/include ${rapidjson_SOURCE_DIR}/include)
+target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_DIR}/include ${rapidjson_SOURCE_DIR}/include ${reflect_cpp_SOURCE_DIR}/include)
 
 find_package(Qt5 COMPONENTS Core)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson Boost::json)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt Boost::json reflectcpp)
 
 if (Qt5_FOUND)
   target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_QT=1)
