@@ -884,7 +884,7 @@ auto json_struct_test()
 
 auto reflect_cpp_test()
 {
-   std::string buffer{ json0 };
+   std::string buffer{ json_minified };
 
    obj_t obj;
 
@@ -1950,7 +1950,7 @@ static constexpr std::string_view table_header_read = R"(
 void test0()
 {
    std::vector<results> results;
-   results.emplace_back(glaze_test());
+   results.emplace_back(glaze_test<glz::opts{}>());
    //results.emplace_back(simdjson_test());
    //results.emplace_back(yyjson_test());
    //results.emplace_back(daw_json_link_test());

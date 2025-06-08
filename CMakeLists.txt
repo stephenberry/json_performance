@@ -69,13 +69,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(yyjson)
 
 FetchContent_Declare(
-        reflect_cpp
+        reflectcpp
 	GIT_REPOSITORY https://github.com/getml/reflect-cpp
-        GIT_TAG main
+        GIT_TAG v0.19.0
 	GIT_SHALLOW TRUE
 )
 
-FetchContent_MakeAvailable(reflect_cpp)
+FetchContent_MakeAvailable(reflectcpp)
 
 FetchContent_Declare(
         fmt
@@ -102,7 +102,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE include ${json_struct_SOURCE_
 
 find_package(Qt5 COMPONENTS Core)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt Boost::json reflect_cpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json glaze::glaze daw::daw-json-link simdjson yyjson fmt::fmt Boost::json reflectcpp)
 
 if (Qt5_FOUND)
   target_compile_definitions(${PROJECT_NAME} PRIVATE HAVE_QT=1)
